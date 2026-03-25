@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vistoria Pro - GeoSistema</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="css/style.css">
+  <!-- ══ PWA GeoSistema PRO ══ -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#2980b9">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="GeoSistema PRO">
+  <link rel="apple-touch-icon" href="./assets/icon-192.png">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(r => console.log('SW registrado:', r.scope))
+          .catch(e => console.warn('SW falhou:', e));
+      });
+    }
+  </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Vistoria de Edificações</h1>
+        
+        <form id="vistoriaForm">
+
+            <!-- ===== DADOS GERAIS ===== -->
+            <div class="section">
+                <h2 class="section-title">Dados Gerais</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Bairro:</label>
+                        <select id="bairro" name="bairro" required><option value="">Selecione...</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Código:</label>
+                        <input type="text" id="codigoEdificacao" name="codigoEdificacao" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Cidade:</label>
+                    <input type="text" id="cidade" name="cidade" readonly>
+                </div>
+                <div id="mapa"></div>
+                <input type="hidden" id="latitude" name="latitude">
+                <input type="hidden" id="longitude" name="longitude">
+            </div>
+
+            <!-- ===== CARACTERÍSTICAS TÉCNICAS ===== -->
+            <div class="section">
+                <h2 class="section-title">Características Técnicas</h2>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Zoneamento:</label>
+                        <input type="text" name="zoneamento" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de Estrutura:</label>
+                        <select name="tipoEstrutura">
+                            <option value="Alvenaria">Alvenaria</option>
+                            <option value="Metálica">Metálica</option>
+                            <option value="Mista">Mista</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Alvará:</label>
+                        <select name="possuiAlvara">
+                            <option value="Sim">Sim</option>
+                            <option value="Não">Não</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>AVCB (Corpo de Bombeiros):</label>
+                        <select name="avcb">
+                            <option value="Sim">Sim</option>
+                            <option value="Não">Não</option>
+                            <option value="Vencido">Vencido</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Estacionamento:</label>
+                        <select name="possuiEstacionamento">
+                            <option value="Sim">Sim</option>
+                            <option value="Não">Não</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Espaçamento Corredores:</label>
+                        <select name="espacamentoCorredores">
+                            <option value="Maior que 1.2m">Maior que 1.2m</option>
+                            <option value="Menor que 1.0m">Menor que 1.0m</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Situação do Piso:</label>
+                        <select name="situacaoPiso">
+                            <option value="Boa">Boa</option>
+                            <option value="Regular">Regular</option>
+                            <option value="Ruim">Ruim</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Situação da Pintura:</label>
+                        <select name="situacaoPintura">
+                            <option value="Boa">Boa</option>
+                            <option value="Regular">Regular</option>
+                            <option value="Ruim">Ruim</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Condição da Cobertura:</label>
+                        <select name="condicaoCobertura">
+                            <option value="Boa">Boa</option>
+                            <option value="Com infiltração">Com infiltração</option>
+                            <option value="Danificada">Danificada</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Acessibilidade:</label>
+                        <select name="acessibilidade">
+                            <option value="Boa">Boa</option>
+                            <option value="Pouca">Pouca</option>
+                            <option value="Nenhuma">Nenhuma</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nível de Urgência:</label>
+                        <select name="nivelUrgencia" class="select-urgencia">
+                            <option value="Normal">Normal</option>
+                            <option value="Atenção">Atenção</option>
+                            <option value="Urgente">Urgente</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Apontamentos de Recuo -->
+                <div class="form-group" style="margin-top: 5px;">
+                    <label>Recuo:</label>
+                    <div class="checklist checklist-inline">
+                        <label><input type="checkbox" name="apontamento" value="Sem recuo lateral"> Sem recuo lateral</label>
+                        <label><input type="checkbox" name="apontamento" value="Sem recuo de fundo"> Sem recuo de fundo</label>
+                    </div>
+                </div>
+
+                <!-- Apontamento: Área de Risco -->
+                <div class="form-group">
+                    <label>Situação de Risco:</label>
+                    <div class="checklist checklist-inline">
+                        <label class="label-risco"><input type="checkbox" name="apontamento" value="Área de risco"> ⚠️ Área de risco</label>
+                    </div>
+                </div>
+
+                <!-- Outras Dependências -->
+                <div class="form-group">
+                    <label>Outras Dependências:</label>
+                    <div class="checklist checklist-inline">
+                        <label><input type="checkbox" name="dependencia" value="Fundo Bíblico"> Fundo Bíblico</label>
+                        <label><input type="checkbox" name="dependencia" value="EBI"> EBI</label>
+                        <label><input type="checkbox" name="dependencia" value="Secretaria"> Secretaria</label>
+                        <label><input type="checkbox" name="dependencia" value="Salão Principal"> Salão Principal</label>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ===== CHECKLIST DE MANUTENÇÃO ===== -->
+            <div class="section">
+                <h2 class="section-title">Checklist de Manutenção</h2>
+                <div class="checklist">
+                    <label><input type="checkbox" name="servico" value="Lâmpadas"> Troca de Lâmpadas</label>
+                    <label><input type="checkbox" name="servico" value="Hidráulico"> Reparo Hidráulico</label>
+                    <label><input type="checkbox" name="servico" value="Calhas"> Limpeza de Calhas</label>
+                    <label><input type="checkbox" name="servico" value="Telhado"> Reparo no Telhado</label>
+                </div>
+                <textarea name="servicoExecutado" placeholder="Observações do encarregado..." rows="3" style="margin-top:15px;"></textarea>
+            </div>
+
+            <!-- ===== REGISTRO FOTOGRÁFICO ===== -->
+            <div class="section">
+                <h2 class="section-title">Registro Fotográfico (Obrigatório)</h2>
+                <div class="images-grid">
+                    <div class="img-input"><span>1. Fachada</span><input type="file" name="imagemFachada" accept="image/*" required></div>
+                    <div class="img-input"><span>2. Piso</span><input type="file" name="imagemPiso" accept="image/*" required></div>
+                    <div class="img-input"><span>3. Elétrica</span><input type="file" name="imagemQuadro" accept="image/*" required></div>
+                    <div class="img-input"><span>4. Forro</span><input type="file" name="imagemForro" accept="image/*" required></div>
+                    <div class="img-input"><span>5. Pintura</span><input type="file" name="imagemPintura" accept="image/*" required></div>
+                    <div class="img-input"><span>6. Acesso</span><input type="file" name="imagemAcesso" accept="image/*" required></div>
+                </div>
+            </div>
+
+            <!-- ===== OCORRÊNCIAS CRÍTICAS ===== -->
+            <div class="section" style="border-top: 3px solid var(--danger-color);">
+                <h2 class="section-title" style="color: var(--danger-color);">📸 Ocorrências Críticas (Opcional)</h2>
+                <p style="font-size: 0.8rem; color: #666; margin-bottom: 10px;">Registre infiltrações, rachaduras ou problemas graves.</p>
+                <div class="form-group">
+                    <input type="file" name="fotosExtras" accept="image/*" multiple>
+                    <small>Selecione até 3 fotos extras.</small>
+                </div>
+            </div>
+
+            <!-- ===== AÇÕES ===== -->
+            <div class="actions-container">
+                <button type="submit" class="btn-save">💾 SALVAR VISTORIA</button>
+                <div class="btn-group-row">
+                    <button type="button" class="btn-secondary btn-whats">📱 WhatsApp</button>
+                    <button type="button" id="btnExportar" class="btn-secondary btn-export">📤 Exportar JSON</button>
+                </div>
+            </div>
+
+        </form>
+
+        <div class="section-memoria">
+            <small style="color: #d63031; display: block; margin-bottom: 10px; font-weight: bold;">
+                ⚠️ Atenção: Use apenas após enviar os arquivos ao engenheiro.
+            </small>
+            <button type="button" class="btn-danger" onclick="limparBancoDados()">🗑️ LIMPAR MEMÓRIA DO APP</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/mapa.js"></script>
+    <script src="js/armazenamento.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

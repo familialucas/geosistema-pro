@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GeoSistema PRO — Diário de Obra (Encarregado)</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f6fa;--sur:#fff;--brd:#e2e8f0;--blue:#1a73e8;--blue-lt:#e8f0fd;--teal:#00b894;--teal-lt:#e0f7f3;--amber:#f59e0b;--amber-lt:#fef3c7;--red:#ef4444;--red-lt:#fee2e2;--green:#22c55e;--green-lt:#dcfce7;--purple:#8b5cf6;--purple-lt:#ede9fe;--text:#1e293b;--muted:#64748b;--r:14px;--sh:0 2px 16px rgba(0,0,0,.08);}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:90px;}
+.app-header{background:var(--blue);padding:16px 20px 0;}
+.h-top{display:flex;align-items:center;justify-content:space-between;}
+.h-logo{display:flex;align-items:center;gap:10px;}
+.h-icon{width:38px;height:38px;background:rgba(255,255,255,.2);border-radius:10px;display:grid;place-items:center;font-size:20px;}
+.h-title{color:#fff;font-size:17px;font-weight:700;line-height:1.1;}
+.h-sub{color:rgba(255,255,255,.7);font-size:11px;}
+.h-nav{display:flex;gap:6px;}
+.h-nav a{color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:5px 10px;border-radius:6px;text-decoration:none;border:1px solid rgba(255,255,255,.2);}
+.h-nav .h-nav-active{color:#fff;background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.5);cursor:default;}
+.step-bar{display:flex;gap:6px;padding:14px 0 0;}
+.si{flex:1;}
+.sl{height:4px;border-radius:99px;background:rgba(255,255,255,.25);transition:background .3s;}
+.sl.done{background:rgba(255,255,255,.75);}
+.sl.active{background:#fff;}
+.slbl{font-size:10px;color:rgba(255,255,255,.5);text-align:center;margin-top:4px;font-weight:600;}
+.slbl.active{color:rgba(255,255,255,.95);}
+.wave{height:18px;background:var(--blue);clip-path:ellipse(55% 100% at 50% 0%);margin-bottom:-1px;}
+.content{padding:18px 16px;max-width:480px;margin:0 auto;}
+.sc{background:var(--sur);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:14px;overflow:hidden;border:1px solid var(--brd);animation:su .3s ease both;}
+@keyframes su{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.sc-h{padding:14px 18px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:10px;}
+.sc-ico{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:17px;flex-shrink:0;}
+.ib{background:var(--blue-lt);}.it{background:var(--teal-lt);}.ia{background:var(--amber-lt);}.ir{background:var(--red-lt);}.ip{background:var(--purple-lt);}
+.sc-title{font-size:14px;font-weight:700;}
+.sc-sub{font-size:11px;color:var(--muted);}
+.sc-b{padding:16px 18px;}
+.fg{margin-bottom:13px;}
+.fg:last-child{margin-bottom:0;}
+label.fl{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px;}
+input,select,textarea{width:100%;padding:10px 13px;background:var(--bg);border:1.5px solid var(--brd);border-radius:10px;color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;outline:none;transition:border-color .2s;-webkit-appearance:none;}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,115,232,.1);}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+
+/* FASE FILTRO */
+.fase-scroll{overflow-x:auto;padding-bottom:6px;margin-bottom:13px;}
+.fps{display:flex;gap:7px;width:max-content;}
+.fp{padding:6px 13px;border-radius:20px;border:1.5px solid var(--brd);background:var(--bg);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;-webkit-user-select:none;user-select:none;transition:all .15s;}
+.fp.ativo{background:var(--blue);border-color:var(--blue);color:#fff;}
+
+/* ATIVIDADE */
+.ativ-list{display:flex;flex-direction:column;gap:7px;}
+.ai{border:1.5px solid var(--brd);border-radius:10px;background:var(--bg);overflow:hidden;transition:border-color .2s;}
+.ai.sel{border-color:var(--blue);background:var(--blue-lt);}
+.ai.parcial{border-color:var(--amber);background:var(--amber-lt);}
+.ai.done{border-color:var(--green);background:var(--green-lt);opacity:.72;}
+.ai-head{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;cursor:pointer;-webkit-user-select:none;user-select:none;}
+.ai-chk{width:22px;height:22px;border-radius:6px;border:2px solid var(--brd);flex-shrink:0;margin-top:1px;display:grid;place-items:center;font-size:12px;transition:all .15s;}
+.ai.sel .ai-chk{background:var(--blue);border-color:var(--blue);color:#fff;}
+.ai.parcial .ai-chk{background:var(--amber);border-color:var(--amber);color:#fff;}
+.ai.done .ai-chk{background:var(--green);border-color:var(--green);color:#fff;}
+.ai-info{flex:1;}
+.ai-nome{font-size:13px;font-weight:600;line-height:1.3;}
+.ai-meta{display:flex;gap:5px;margin-top:3px;flex-wrap:wrap;align-items:center;}
+.fpill{padding:2px 6px;border-radius:5px;font-size:10px;font-weight:700;text-transform:uppercase;}
+.lock-badge{font-size:10px;color:var(--green);font-weight:700;display:flex;align-items:center;gap:3px;}
+.ai-pct{padding:0 13px 12px;display:none;}
+.ai.sel .ai-pct,.ai.parcial .ai-pct{display:block;}
+.pct-lbl{font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:600;}
+.pct-sl{width:100%;-webkit-appearance:none;height:6px;border-radius:99px;outline:none;padding:0;border:none;background:linear-gradient(to right,var(--blue) 0%,var(--blue) var(--val,0%),var(--brd) var(--val,0%));}
+.pct-sl::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--blue);cursor:pointer;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.2);}
+.pct-quick{display:flex;gap:6px;margin-top:8px;}
+.pq{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;border:1.5px solid var(--brd);background:var(--bg);cursor:pointer;transition:all .12s;}
+.pq.sel{background:var(--blue);border-color:var(--blue);color:#fff;}
+
+/* MÃO DE OBRA */
+.mdo-item{display:flex;align-items:center;gap:10px;padding:10px 13px;background:var(--bg);border-radius:10px;border:1.5px solid var(--brd);margin-bottom:8px;}
+.mdo-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--teal));display:grid;place-items:center;color:#fff;font-size:15px;flex-shrink:0;}
+.mdo-nome{flex:1;font-size:13px;font-weight:600;}
+.mdo-func{font-size:11px;color:var(--muted);}
+.mdo-h{font-family:'DM Mono',monospace;font-size:12px;color:var(--blue);font-weight:500;}
+.btn-rm{width:28px;height:28px;border-radius:7px;border:none;background:var(--red-lt);color:var(--red);cursor:pointer;font-size:14px;display:grid;place-items:center;}
+.btn-add{width:100%;padding:11px;border-radius:10px;border:1.5px dashed var(--brd);background:transparent;color:var(--blue);font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;}
+
+/* FOTOS */
+.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.fslot{aspect-ratio:1;border-radius:10px;overflow:hidden;border:1.5px dashed var(--brd);position:relative;cursor:pointer;background:var(--bg);display:grid;place-items:center;}
+.fslot.filled{border-style:solid;border-color:var(--teal);}
+.fslot img{width:100%;height:100%;object-fit:cover;display:block;}
+.fph{text-align:center;padding:8px;}
+.fph .cam{font-size:22px;margin-bottom:3px;}
+.fph span{font-size:10px;color:var(--muted);font-weight:500;display:block;}
+.fdel{position:absolute;top:4px;right:4px;width:22px;height:22px;background:rgba(0,0,0,.55);border:none;border-radius:50%;color:#fff;font-size:11px;cursor:pointer;display:grid;place-items:center;}
+
+/* INCIDENTES */
+.inc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:13px;}
+.inc-btn{padding:10px 8px;border-radius:10px;border:1.5px solid var(--brd);background:var(--bg);font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;cursor:pointer;text-align:center;-webkit-user-select:none;user-select:none;transition:all .15s;line-height:1.4;}
+.inc-btn.ir2{background:var(--red-lt);border-color:var(--red);color:#991b1b;}
+.inc-btn.ia2{background:var(--amber-lt);border-color:var(--amber);color:#92400e;}
+.inc-btn.ip2{background:var(--purple-lt);border-color:var(--purple);color:#5b21b6;}
+.inc-btn.ib2{background:var(--blue-lt);border-color:var(--blue);color:var(--blue);}
+.grav-row{display:flex;gap:8px;margin-bottom:13px;}
+.gv{flex:1;padding:8px 4px;border-radius:8px;border:1.5px solid var(--brd);background:var(--bg);font-size:12px;font-weight:600;cursor:pointer;text-align:center;-webkit-user-select:none;user-select:none;}
+.gv.g1.sel{background:var(--green-lt);border-color:var(--green);color:#15803d;}
+.gv.g2.sel{background:var(--amber-lt);border-color:var(--amber);color:#92400e;}
+.gv.g3.sel{background:var(--red-lt);border-color:var(--red);color:#991b1b;}
+
+/* RESUMO */
+.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.res-box{padding:12px;background:var(--bg);border-radius:10px;text-align:center;}
+.res-val{font-size:22px;font-weight:800;}
+.res-lbl{font-size:10px;color:var(--muted);font-weight:500;margin-top:2px;}
+
+/* BOTTOM */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--sur);border-top:1px solid var(--brd);padding:12px 16px;display:flex;gap:10px;box-shadow:0 -4px 20px rgba(0,0,0,.08);}
+.btn-wa{flex:1;padding:14px;border-radius:12px;border:none;background:#25d366;color:#fff;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;}
+.btn-wa:active{background:#1da851;}
+.btn-sv{flex:1;padding:14px;border-radius:12px;border:none;background:var(--blue);color:#fff;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;}
+.btn-sv:active{background:#1558b0;}
+.sh-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;backdrop-filter:blur(3px);}
+.sh-ov.open{display:flex;}
+.sheet{background:var(--sur);border-radius:20px 20px 0 0;padding:22px 20px;width:100%;animation:shup .28s cubic-bezier(.4,0,.2,1);}
+@keyframes shup{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.sh-h{width:40px;height:4px;background:var(--brd);border-radius:99px;margin:0 auto 18px;}
+.sh-title{font-size:17px;font-weight:700;margin-bottom:16px;}
+.toast{position:fixed;top:72px;left:50%;transform:translateX(-50%) translateY(-14px);background:#1e293b;color:#fff;padding:9px 20px;border-radius:99px;font-size:13px;font-weight:600;opacity:0;transition:all .25s;z-index:300;white-space:nowrap;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* fase pill colors */
+.f0{background:#e2e8f0;color:#475569;}.f1{background:var(--amber-lt);color:#92400e;}.f2{background:var(--blue-lt);color:var(--blue);}.f3{background:var(--teal-lt);color:#065f46;}.f4{background:var(--green-lt);color:#15803d;}.f5{background:#e2e8f0;color:#475569;}.f6{background:#fef3c7;color:#92400e;}.f7{background:var(--red-lt);color:#991b1b;}.f8{background:var(--blue-lt);color:#1e40af;}.f9{background:var(--teal-lt);color:#065f46;}.f10{background:#ede9fe;color:#5b21b6;}.f11{background:#fef3c7;color:#78350f;}.f12{background:var(--green-lt);color:#14532d;}
+
+@media(min-width:480px){.content{margin:0 auto;}.bottom-bar{max-width:480px;left:50%;transform:translateX(-50%);}}
+</style>
+  <!-- ══ PWA GeoSistema PRO ══ -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#1a73e8">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="GeoSistema PRO">
+  <link rel="apple-touch-icon" href="./assets/icon-192.png">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(r => console.log('SW registrado:', r.scope))
+          .catch(e => console.warn('SW falhou:', e));
+      });
+    }
+  </script>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<div class="app-header">
+  <div class="h-top">
+    <div class="h-logo">
+      <div class="h-icon">📓</div>
+      <div><div class="h-title">Diário de Obra</div><div class="h-sub">GeoSistema PRO · v2</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;flex:1;max-width:220px;margin:0 10px;">
+      <select id="obraSelect" onchange="trocarObra(this.value)"
+        style="padding:5px 8px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+               border-radius:7px;color:#fff;font-size:11px;font-family:'Outfit',sans-serif;
+               outline:none;cursor:pointer;width:100%;">
+        <option>Carregando...</option>
+      </select>
+    </div>
+    <div class="h-nav">
+      <a href="#" class="h-nav-active">📋 Encarregado</a>
+      <a href="Diario_de_Obra_v2.html">🏗️ Obras</a>
+      <a href="Dashboard_Financeiro.html">💰 Financeiro</a>
+      <a href="Dashboard_Manutencao.html">🔧 Manutenção</a>
+    </div>
+  </div>
+  <div class="step-bar" id="stepBar"></div>
+</div>
+<div class="wave"></div>
+<div class="content" id="mainContent"></div>
+
+<div class="bottom-bar">
+  <button class="btn-wa" onclick="enviarWhats()">📱 WhatsApp</button>
+  <button class="btn-sv" id="btnNext" onclick="avancar()">Próximo →</button>
+</div>
+
+<!-- Sheet: Adicionar Trabalhador -->
+<div class="sh-ov" id="shTrab">
+  <div class="sheet">
+    <div class="sh-h"></div>
+    <div class="sh-title">➕ Adicionar Trabalhador</div>
+    <div class="fg"><label class="fl">Nome</label><input type="text" id="tNome" placeholder="Nome completo"></div>
+    <div class="fr2">
+      <div class="fg"><label class="fl">Função</label>
+        <select id="tFunc"><option>Pedreiro</option><option>Servente</option><option>Eletricista</option><option>Encanador</option><option>Pintor</option><option>Carpinteiro</option><option>Armador</option><option>Mestre</option><option>Encarregado</option><option>Outro</option></select>
+      </div>
+      <div class="fg"><label class="fl">Horas</label><input type="number" id="tHoras" value="8" min="1" max="12"></div>
+    </div>
+    <button class="btn-sv" style="width:100%;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:700;margin-top:4px;" onclick="confirmarTrab()">✅ Confirmar</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DADOS
+// ============================================================
+const FASES=['Proc. Admin.','Terreno','Projeto','Infraestrutura','Superestrutura','Alvenaria','Pisos','Elétrica','Hidráulica','Cobertura','Revestimentos','Pintura','Acabamentos'];
+
+// Atividades — fase 0 (Admin.) removida do diário do encarregado
+const ATIVS=[
+  {id:'AT41',fase:1,nome:'Topografia'},
+  {id:'AT51',fase:1,nome:'Terraplanagem'},
+  {id:'AT61',fase:1,nome:'Muro de divisa'},
+  {id:'AT181',fase:3,nome:'Gabarito e Marcação Alvenaria'},
+  {id:'AT191',fase:3,nome:'Corte e Montagem Ferragens'},
+  {id:'AT201',fase:3,nome:'Formas'},
+  {id:'AT211',fase:3,nome:'Concretagem'},
+  {id:'AT221',fase:3,nome:'Desforma'},
+  {id:'AT231',fase:3,nome:'Impermeabilização Baldrame'},
+  {id:'AT241',fase:3,nome:'Muros de Divisa'},
+  {id:'AT251',fase:4,nome:'Mobilização interna'},
+  {id:'AT261',fase:4,nome:'Linha de vida na Laje'},
+  {id:'AT271',fase:4,nome:'Ferragem Pilares / SPDA'},
+  {id:'AT281',fase:4,nome:'Formas dos Pilares'},
+  {id:'AT291',fase:4,nome:'Concretar Pilares'},
+  {id:'AT301',fase:4,nome:'Desforma de Pilares'},
+  {id:'AT311',fase:4,nome:'Armação Vigas Superiores'},
+  {id:'AT321',fase:4,nome:'Forma Vigas Superiores'},
+  {id:'AT331',fase:4,nome:'Concretagem Vigas Superiores'},
+  {id:'AT341',fase:4,nome:'Desforma Vigas'},
+  {id:'AT351',fase:5,nome:'Alvenaria interna'},
+  {id:'AT361',fase:5,nome:'Alvenaria externa'},
+  {id:'AT371',fase:5,nome:'Reboco interno'},
+  {id:'AT381',fase:5,nome:'Reboco externo'},
+  {id:'AT391',fase:5,nome:'Finalização reboco'},
+  {id:'AT401',fase:6,nome:'Contrapiso interno'},
+  {id:'AT411',fase:6,nome:'Contrapiso externo'},
+  {id:'AT421',fase:6,nome:'Piso intertravado'},
+  {id:'AT431',fase:7,nome:'Compra materiais elétrica'},
+  {id:'AT441',fase:7,nome:'Equipe eletricista — início'},
+  {id:'AT451',fase:7,nome:'Passagem cabos interno'},
+  {id:'AT461',fase:7,nome:'Espelhos e tomadas'},
+  {id:'AT471',fase:7,nome:'QG de Forças'},
+  {id:'AT481',fase:7,nome:'Passagem cabos externos'},
+  {id:'AT491',fase:7,nome:'Luminárias'},
+  {id:'AT501',fase:8,nome:'Compra materiais hidráulica'},
+  {id:'AT511',fase:8,nome:'Equipe hidráulica — início'},
+  {id:'AT521',fase:8,nome:'Tubulação externa'},
+  {id:'AT531',fase:8,nome:'Tubulação interna'},
+  {id:'AT541',fase:8,nome:'Caixas de passagens'},
+  {id:'AT551',fase:8,nome:'Instalação peças hidráulicas'},
+  {id:'AT561',fase:9,nome:'Estrutura cobertura — reparo'},
+  {id:'AT571',fase:9,nome:'Calhas'},
+  {id:'AT581',fase:9,nome:'Compra de Forro'},
+  {id:'AT591',fase:9,nome:'Instalação Forro 1'},
+  {id:'AT601',fase:9,nome:'Instalação Forro 2'},
+  {id:'AT611',fase:9,nome:'Pastilhas fachada'},
+  {id:'AT621',fase:10,nome:'Compra revestimentos'},
+  {id:'AT631',fase:10,nome:'Revestimentos banheiros'},
+  {id:'AT641',fase:10,nome:'Revestimentos Nave'},
+  {id:'AT651',fase:10,nome:'Revestimentos externos'},
+  {id:'AT661',fase:11,nome:'Compra materiais pintura'},
+  {id:'AT671',fase:11,nome:'Emassamento interno'},
+  {id:'AT681',fase:11,nome:'Emassamento externo'},
+  {id:'AT691',fase:11,nome:'Pintura interna'},
+  {id:'AT701',fase:11,nome:'Pintura externa'},
+  {id:'AT711',fase:11,nome:'Sinalização e segurança'},
+  {id:'AT721',fase:12,nome:'Portas e batentes'},
+  {id:'AT731',fase:12,nome:'Cotação Esquadrias'},
+  {id:'AT741',fase:12,nome:'Instalação Esquadrias'},
+  {id:'AT751',fase:12,nome:'Peças sanitárias'},
+  {id:'AT761',fase:12,nome:'Cotação Ar condicionado'},
+  {id:'AT771',fase:12,nome:'Instalação Ar condicionado'},
+  {id:'AT821',fase:12,nome:'Ajustes Finais'},
+];
+
+// ============================================================
+// ESTADO PERSISTENTE
+// ============================================================
+// ── Helper localStorage (mesmo padrão do Dashboard de Obras) ──
+const LS={
+  get:(k,fb=null)=>{try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):fb;}catch{return fb;}},
+  set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true;}catch{return false;}}
+};
+
+// ── Obra ativa — sincroniza com Diario_de_Obra_v2 ──
+function getObraAtiva(){return LS.get('geo_obra_ativa','obra_default');}
+function lsObra(chave){return chave+'_'+getObraAtiva();}
+function getObraInfo(){
+  const obras=LS.get('geo_obras',[
+    {id:'obra_default',nome:'Igreja Lauro de Freitas Central',tipo:'construcao'}
+  ]);
+  return obras.find(o=>o.id===getObraAtiva())||obras[0];
+}
+
+// Popula o seletor de obra no header (só obras cadastradas no Dashboard)
+function popularObraSelect(){
+  const sel=document.getElementById('obraSelect');
+  if(!sel)return;
+  const obras=LS.get('geo_obras',[
+    {id:'obra_default',nome:'Igreja Lauro de Freitas Central',tipo:'construcao'}
+  ]);
+  const ativa=getObraAtiva();
+  sel.innerHTML=obras.map(o=>
+    `<option value="${o.id}" ${o.id===ativa?'selected':''}>${o.tipo==='reforma'?'🔧':'🏗️'} ${o.nome}</option>`
+  ).join('');
+  // Atualiza tipo no state ao trocar obra
+  const obra=getObraInfo();
+  if(obra) S.tipoObra=obra.tipo;
+}
+
+function loadPct(){return LS.get(lsObra('geo_atividades_pct'),{});}
+function savePct(e){
+  LS.set(lsObra('geo_atividades_pct'),e);
+  const vals=ATIVS.map(a=>e[a.id]||0);
+  const avg=Math.round(vals.reduce((s,v)=>s+v,0)/ATIVS.length);
+  LS.set(lsObra('geo_avanco_fisico'),avg);
+  LS.set('geo_avanco_fisico',avg); // compatibilidade Dashboard_Financeiro
+}
+let PCT=loadPct();
+
+let step=0;const STEPS=5;
+const S={
+  data:new Date().toLocaleDateString('pt-BR'),
+  encarregado:'',tipoObra:'construcao',clima:'☀️ Ensolarado',obs:'',
+  selecionadas:[],servicosDesc:'',trabalhadores:[],fotos:[],
+  incidentes:[],incGrav:'',incFerr:'',incDesc:''
+};
+let FF=-1;
+
+const SNOMES=['Geral','Atividades','Equipe','Fotos','Incidentes'];
+
+// ============================================================
+// BARRA DE PASSOS
+// ============================================================
+function updateBar(){
+  document.getElementById('stepBar').innerHTML=SNOMES.map((n,i)=>
+    `<div class="si"><div class="sl ${i<step?'done':i===step?'active':''}"></div><div class="slbl ${i===step?'active':''}">${n}</div></div>`
+  ).join('');
+  document.getElementById('btnNext').textContent=step===STEPS-1?'✅ Concluir':'Próximo →';
+}
+
+function render(){updateBar();const c=document.getElementById('mainContent');c.innerHTML='';[rGeral,rAtivs,rEquipe,rFotos,rInc][step](c);}
+
+// ============================================================
+// STEP 0 — GERAL
+// ============================================================
+function rGeral(c){
+  c.innerHTML=`<div class="sc">
+    <div class="sc-h"><div class="sc-ico ib">📋</div><div><div class="sc-title">Identificação</div><div class="sc-sub">Dados do dia</div></div></div>
+    <div class="sc-b">
+      <div class="fg"><label class="fl">Encarregado</label><input id="g_enc" value="${S.encarregado}" placeholder="Nome do encarregado"></div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">Tipo de obra</label>
+          <select id="g_tipo">
+            <option value="construcao" ${S.tipoObra==='construcao'?'selected':''}>🏗️ Construção</option>
+            <option value="reforma" ${S.tipoObra==='reforma'?'selected':''}>🔧 Reforma</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Clima</label>
+          <select id="g_cli">
+            <option>☀️ Ensolarado</option><option>⛅ Nublado</option><option>🌧️ Chuva leve</option><option>⛈️ Chuva forte</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Observações</label><textarea id="g_obs" rows="3" placeholder="Situação geral...">${S.obs}</textarea></div>
+    </div>
+  </div>`;
+  document.getElementById('g_cli').value=S.clima;
+}
+function svGeral(){
+  S.encarregado=document.getElementById('g_enc')?.value||S.encarregado;
+  S.tipoObra=document.getElementById('g_tipo')?.value||S.tipoObra;
+  S.clima=document.getElementById('g_cli')?.value||S.clima;
+  S.obs=document.getElementById('g_obs')?.value||S.obs;
+}
+
+// ============================================================
+// STEP 1 — ATIVIDADES (com trava + % conclusão)
+// ============================================================
+function rAtivs(c){
+  const fases=[...new Set(ATIVS.map(a=>a.fase))];
+  const lista=FF===-1?ATIVS:ATIVS.filter(a=>a.fase===FF);
+  const concl=ATIVS.filter(a=>(PCT[a.id]||0)>=100).length;
+
+  const filtros=`<div class="fase-scroll"><div class="fps">
+    <div class="fp ${FF===-1?'ativo':''}" onclick="filtFase(-1)">Todas (${ATIVS.length})</div>
+    ${fases.map(f=>{
+      const n=ATIVS.filter(a=>a.fase===f).length;
+      const d=ATIVS.filter(a=>a.fase===f&&(PCT[a.id]||0)>=100).length;
+      return`<div class="fp ${FF===f?'ativo':''}" onclick="filtFase(${f})">${FASES[f]} ${d}/${n}</div>`;
+    }).join('')}
+  </div></div>`;
+
+  const itens=lista.map(a=>{
+    const p=PCT[a.id]||0;
+    const isSel=S.selecionadas.some(s=>s.id===a.id);
+    const isDone=p>=100;
+    const isParcial=p>0&&p<100&&isSel;
+    const cls=isDone?'done':isParcial?'parcial':isSel?'sel':'';
+    const chk=isDone?'✓':isParcial?`${p}%`:isSel?'✓':'';
+    // Atividade concluída (100%) fica travada — apenas mostra badge
+    const headClick=isDone
+      ?`onclick="showT('🔒 Concluída — já registrada!')"`
+      :`onclick="togA('${a.id}')"`;
+    return`<div class="ai ${cls}" id="ai_${a.id}">
+      <div class="ai-head" ${headClick}>
+        <div class="ai-chk">${chk}</div>
+        <div class="ai-info">
+          <div class="ai-nome">${a.nome}</div>
+          <div class="ai-meta">
+            <span class="fpill f${a.fase}">${FASES[a.fase]}</span>
+            <span style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;">${a.id}</span>
+            ${p>0&&!isDone?`<span style="font-size:11px;font-weight:700;color:var(--amber);">${p}%</span>`:''}
+            ${isDone?'<span class="lock-badge">🔒 100%</span>':''}
+          </div>
+        </div>
+      </div>
+      ${!isDone?`<div class="ai-pct">
+        <div class="pct-lbl">Conclusão: <strong id="pv_${a.id}">${p}%</strong></div>
+        <input type="range" class="pct-sl" min="0" max="100" step="5" value="${p}" style="--val:${p}%"
+          oninput="updP('${a.id}',this.value)"
+          onchange="cmtP('${a.id}',this.value)">
+        <div class="pct-quick">
+          ${[25,50,75,100].map(v=>`<div class="pq ${p===v?'sel':''}" onclick="setP('${a.id}',${v})">${v}%</div>`).join('')}
+        </div>
+      </div>`:''}
+    </div>`;
+  }).join('');
+
+  c.innerHTML=`<div class="sc">
+    <div class="sc-h"><div class="sc-ico it">✅</div><div><div class="sc-title">Atividades Executadas</div><div class="sc-sub">${S.selecionadas.length} ativas · ${concl} concluídas (🔒)</div></div></div>
+    <div class="sc-b">
+      ${filtros}
+      <div class="ativ-list">${itens}</div>
+      <div class="fg" style="margin-top:14px;">
+        <label class="fl">Descrição dos serviços</label>
+        <textarea id="a_desc" rows="4" placeholder="Materiais, metragem, detalhes...">${S.servicosDesc}</textarea>
+      </div>
+    </div>
+  </div>`;
+}
+function filtFase(f){svAtiv();FF=f;rAtivs(document.getElementById('mainContent'));}
+function togA(id){
+  const i=S.selecionadas.findIndex(s=>s.id===id);
+  if(i===-1)S.selecionadas.push({id,pct:PCT[id]||0});
+  else S.selecionadas.splice(i,1);
+  rAtivs(document.getElementById('mainContent'));
+}
+function updP(id,v){
+  v=parseInt(v);
+  const el=document.getElementById('pv_'+id);if(el)el.textContent=v+'%';
+  const sl=document.querySelector(`#ai_${id} .pct-sl`);if(sl)sl.style.setProperty('--val',v+'%');
+  document.querySelectorAll(`#ai_${id} .pq`).forEach(b=>b.classList.toggle('sel',parseInt(b.textContent)===v));
+  const s=S.selecionadas.find(s=>s.id===id);if(s)s.pct=v;
+}
+function cmtP(id,v){
+  v=parseInt(v);PCT[id]=v;savePct(PCT);
+  if(v>=100){showT('✅ '+id+' concluída!');setTimeout(()=>rAtivs(document.getElementById('mainContent')),500);}
+  else{const s=S.selecionadas.find(s=>s.id===id);if(!s)S.selecionadas.push({id,pct:v});}
+}
+function setP(id,v){
+  PCT[id]=v;savePct(PCT);
+  const s=S.selecionadas.find(s=>s.id===id);
+  if(s)s.pct=v;else S.selecionadas.push({id,pct:v});
+  if(v>=100){showT('✅ '+id+' concluída!');setTimeout(()=>rAtivs(document.getElementById('mainContent')),400);}
+  else{rAtivs(document.getElementById('mainContent'));}
+}
+function svAtiv(){S.servicosDesc=document.getElementById('a_desc')?.value||S.servicosDesc;}
+
+// ============================================================
+// STEP 2 — EQUIPE / MÃO DE OBRA
+// ============================================================
+function rEquipe(c){
+  const tot=S.trabalhadores.reduce((s,t)=>s+(parseFloat(t.horas)||0),0);
+  const lista=S.trabalhadores.length
+    ?S.trabalhadores.map((t,i)=>`<div class="mdo-item">
+        <div class="mdo-av">👷</div>
+        <div style="flex:1;"><div class="mdo-nome">${t.nome}</div><div class="mdo-func">${t.funcao}</div></div>
+        <span class="mdo-h">${t.horas}h</span>
+        <button class="btn-rm" onclick="rmT(${i})">✕</button>
+      </div>`).join('')
+    :`<p style="text-align:center;color:var(--muted);font-size:13px;padding:12px 0;">Nenhum trabalhador.</p>`;
+  c.innerHTML=`<div class="sc">
+    <div class="sc-h"><div class="sc-ico ia">👷</div><div><div class="sc-title">Mão de Obra</div><div class="sc-sub">${S.trabalhadores.length} trabalhador(es) · ${tot}h</div></div></div>
+    <div class="sc-b">
+      ${lista}
+      <button class="btn-add" onclick="abrirSh()">➕ Adicionar trabalhador</button>
+      ${tot>0?`<div style="margin-top:10px;padding:10px 14px;background:var(--blue-lt);border-radius:10px;font-size:12px;color:var(--blue);font-weight:600;">📊 ${S.trabalhadores.length} trabalhadores · ${tot} horas-homem</div>`:''}
+    </div>
+  </div>`;
+}
+function rmT(i){S.trabalhadores.splice(i,1);rEquipe(document.getElementById('mainContent'));}
+function abrirSh(){document.getElementById('tNome').value='';document.getElementById('tHoras').value='8';document.getElementById('shTrab').classList.add('open');setTimeout(()=>document.getElementById('tNome').focus(),280);}
+function fecharSh(){document.getElementById('shTrab').classList.remove('open');}
+document.getElementById('shTrab').addEventListener('click',e=>{if(e.target===e.currentTarget)fecharSh();});
+function confirmarTrab(){
+  const n=document.getElementById('tNome').value.trim();
+  if(!n){showT('⚠️ Informe o nome');return;}
+  S.trabalhadores.push({nome:n,funcao:document.getElementById('tFunc').value,horas:document.getElementById('tHoras').value});
+  fecharSh();rEquipe(document.getElementById('mainContent'));
+}
+
+// ============================================================
+// STEP 3 — FOTOS
+// ============================================================
+function rFotos(c){
+  const slots=S.fotos.map((f,i)=>`<div class="fslot filled"><img src="${f}"><button class="fdel" onclick="rmF(${i})">✕</button></div>`).join('');
+  const add=S.fotos.length<10?`<div class="fslot" onclick="document.getElementById('fInp').click()"><div class="fph"><div class="cam">📷</div><span>Adicionar</span></div></div>`:'';
+  c.innerHTML=`<div class="sc">
+    <div class="sc-h"><div class="sc-ico it">📷</div><div><div class="sc-title">Fotos</div><div class="sc-sub">${S.fotos.length}/10</div></div></div>
+    <div class="sc-b">
+      <div class="fgrid">${slots}${add}</div>
+      <input type="file" id="fInp" accept="image/*" multiple style="display:none" onchange="addF(this)">
+      <p style="font-size:11px;color:var(--muted);margin-top:10px;text-align:center;">Comprimidas automaticamente</p>
+    </div>
+  </div>`;
+}
+function rmF(i){S.fotos.splice(i,1);rFotos(document.getElementById('mainContent'));}
+function addF(inp){
+  const fs=Array.from(inp.files).slice(0,10-S.fotos.length);
+  Promise.all(fs.map(compImg)).then(r=>{S.fotos.push(...r);rFotos(document.getElementById('mainContent'));showT('✅ '+r.length+' foto(s)');});
+}
+function compImg(f){
+  return new Promise(res=>{
+    const r=new FileReader();r.readAsDataURL(f);
+    r.onload=e=>{const img=new Image();img.src=e.target.result;img.onload=()=>{
+      const c=document.createElement('canvas'),M=900;
+      let w=img.width,h=img.height;if(w>M){h=h*M/w;w=M;}
+      c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+      res(c.toDataURL('image/jpeg',.65));
+    };};
+  });
+}
+
+// ============================================================
+// STEP 4 — INCIDENTES + RESUMO
+// ============================================================
+function rInc(c){
+  const inc=S.incidentes;
+  function iBtn(v,cls,lbl){const s=inc.includes(v);return`<div class="inc-btn ${s?cls:''}" onclick="togI('${v}','${cls}')">${lbl}</div>`;}
+  function gBtn(v,cls,lbl){const s=S.incGrav===v;return`<div class="gv ${cls} ${s?'sel':''}" onclick="setGv('${v}')">${lbl}</div>`;}
+  const ta=S.selecionadas.length,tt=S.trabalhadores.length;
+  const th=S.trabalhadores.reduce((s,t)=>s+(parseFloat(t.horas)||0),0);
+  const tf=S.fotos.length;
+  const pfis=Math.round(ATIVS.map(a=>PCT[a.id]||0).reduce((s,v)=>s+v,0)/ATIVS.length);
+  c.innerHTML=`
+  <div class="sc">
+    <div class="sc-h"><div class="sc-ico ir">⚠️</div><div><div class="sc-title">Incidentes e Ocorrências</div><div class="sc-sub">Registre qualquer problema</div></div></div>
+    <div class="sc-b">
+      <label class="fl" style="margin-bottom:8px;">Tipo de incidente</label>
+      <div class="inc-grid">
+        ${iBtn('🚑 Acidente c/ afastamento','ir2','🚑 Acidente c/ afastamento')}
+        ${iBtn('🩹 Acidente s/ afastamento','ia2','🩹 Acidente s/ afastamento')}
+        ${iBtn('🔧 Falta de ferramenta','ip2','🔧 Falta de ferramenta')}
+        ${iBtn('📦 Falta de material','ia2','📦 Falta de material')}
+        ${iBtn('🌧️ Chuva paralisou','ib2','🌧️ Chuva paralisou')}
+        ${iBtn('⚡ Problema elétrico','ir2','⚡ Problema elétrico')}
+        ${iBtn('🦺 EPI incompleto','ia2','🦺 EPI incompleto')}
+        ${iBtn('🚧 Acesso bloqueado','ib2','🚧 Acesso bloqueado')}
+      </div>
+      ${inc.length>0?`
+        <label class="fl" style="margin-bottom:8px;">Gravidade</label>
+        <div class="grav-row">
+          ${gBtn('leve','g1','🟢 Leve')}
+          ${gBtn('moderado','g2','🟡 Moderado')}
+          ${gBtn('grave','g3','🔴 Grave')}
+        </div>
+        <div class="fg"><label class="fl">Ferramenta / Material em falta</label><input id="inc_f" value="${S.incFerr}" placeholder="Ex: Betoneira, nível, cimento..."></div>
+      `:''}
+      <div class="fg"><label class="fl">Descrição${inc.length>0?' do incidente':' / observações finais'}</label><textarea id="inc_d" rows="3" placeholder="O que aconteceu? Que ação foi tomada?">${S.incDesc}</textarea></div>
+    </div>
+  </div>
+  <div class="sc" style="border-color:rgba(26,115,232,.3);">
+    <div class="sc-h"><div class="sc-ico ib">📊</div><div><div class="sc-title">Resumo do Dia</div><div class="sc-sub">Pronto para enviar</div></div></div>
+    <div class="sc-b">
+      <div class="res-grid">
+        <div class="res-box"><div class="res-val" style="color:var(--blue);">${ta}</div><div class="res-lbl">Atividades</div></div>
+        <div class="res-box"><div class="res-val" style="color:var(--teal);">${tt}</div><div class="res-lbl">Trabalhadores</div></div>
+        <div class="res-box"><div class="res-val" style="color:var(--amber);">${th}h</div><div class="res-lbl">Horas-Homem</div></div>
+        <div class="res-box"><div class="res-val" style="color:var(--green);">${tf}</div><div class="res-lbl">Fotos</div></div>
+      </div>
+      ${inc.length>0?`<div style="padding:10px 14px;background:var(--red-lt);border-radius:10px;font-size:12px;color:var(--red);font-weight:600;margin-bottom:10px;">⚠️ ${inc.length} incidente(s) · Gravidade: ${S.incGrav||'não definida'}</div>`:''}
+      <div style="padding:10px 14px;background:var(--green-lt);border-radius:10px;font-size:12px;color:#15803d;font-weight:600;">
+        ✅ ${S.encarregado||'—'} · ${S.clima} · ${S.data}<br>
+        🏗️ Avanço físico acumulado: ${pfis}%
+      </div>
+    </div>
+  </div>`;
+}
+function togI(v,cls){
+  const i=S.incidentes.indexOf(v);
+  if(i===-1)S.incidentes.push(v);else S.incidentes.splice(i,1);
+  svInc();rInc(document.getElementById('mainContent'));
+}
+function setGv(v){S.incGrav=v;svInc();rInc(document.getElementById('mainContent'));}
+function svInc(){
+  S.incDesc=document.getElementById('inc_d')?.value||S.incDesc;
+  S.incFerr=document.getElementById('inc_f')?.value||S.incFerr;
+}
+
+// ============================================================
+// NAVEGAÇÃO
+// ============================================================
+function svStep(){if(step===0)svGeral();if(step===1)svAtiv();if(step===4)svInc();}
+function avancar(){
+  svStep();
+  if(step<STEPS-1){step++;function trocarObra(id){
+  LS.set('geo_obra_ativa',id);
+  PCT=loadPct();
+  S.selecionadas=[];
+  const obra=getObraInfo();
+  if(obra) S.tipoObra=obra.tipo;
+  showT('Obra: '+((getObraInfo())||{}).nome);
+}
+
+popularObraSelect();
+render();window.scrollTo({top:0,behavior:'smooth'});}
+  else concluir();
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showT(m){
+  const t=document.getElementById('toast');t.textContent=m;
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ============================================================
+// EXPORTAR / CONCLUIR
+// ============================================================
+const GRAV_MAP_ENC={leve:{label:'Leve',nivel:1},moderado:{label:'Médio',nivel:2},grave:{label:'Grave',nivel:3},critico:{label:'Crítico',nivel:4}};
+
+function mkJSON(){
+  const obra=getObraInfo();
+  const gravInfo=GRAV_MAP_ENC[S.incGrav]||{label:'Leve',nivel:1};
+  const ts=new Date().toISOString();
+  return{
+    // ── identificação ──────────────────────────────────────────
+    id:          'diario_'+Date.now(),          // id único — vincula fotos
+    tipo:        'diario_obra',
+    data:        S.data,
+    obra:        obra?.nome||'—',               // campo esperado pelo Dashboard
+    obraId:      getObraAtiva(),
+    responsavel: S.encarregado,                 // alias Dashboard_obra
+    encarregado: S.encarregado,
+    turno:       'Diurno',
+    tipoObra:    S.tipoObra,
+    clima:       S.clima,
+    obs:         S.obs,
+    observacoes: S.obs,                         // alias Dashboard_obra
+    // ── atividades ─────────────────────────────────────────────
+    atividades:S.selecionadas.map(s=>{
+      const a=ATIVS.find(x=>x.id===s.id);
+      return{id:s.id,nome:a?.nome||s.id,fase:FASES[a?.fase||0],pct:s.pct};
+    }),
+    estadoGlobalPct:PCT,
+    avancoFisicoGlobal:LS.get(lsObra('geo_avanco_fisico'),0),
+    servicosDesc:S.servicosDesc,
+    // ── equipe ─────────────────────────────────────────────────
+    trabalhadores:S.trabalhadores,
+    totalHH:S.trabalhadores.reduce((s,t)=>s+(parseFloat(t.horas)||0),0),
+    // ── fotos ──────────────────────────────────────────────────
+    fotos:S.fotos,
+    // ── incidentes ─────────────────────────────────────────────
+    incidentes:S.incidentes,
+    incidentesDetalhados:S.incidentes.map(tipo=>({
+      tipo,
+      gravidade:    gravInfo.label,
+      nivel:        gravInfo.nivel,
+      ferramenta:   S.incFerr,
+      descricao:    S.incDesc,
+      desc:         S.incDesc,
+      horas_paradas:0,
+      status:       'aberto',
+      data:         S.data,
+      obra:         obra?.nome||'—',
+      encarregado:  S.encarregado,
+    })),
+    incGravidade:  gravInfo.label,
+    incNivel:      gravInfo.nivel,
+    incFerramenta: S.incFerr,
+    incDesc:       S.incDesc,
+    geradoEm:      ts
+  };
+}
+
+function concluir(){
+  svStep();const d=mkJSON();
+  try{
+    // Grava diário na chave prefixada pela obra ativa
+    // Chave: geo_diarios_obra_default (ou geo_diarios_obra_XXXX)
+    // → mesma chave que Diario_de_Obra_v2 e Dashboard_Financeiro lêem
+    const keyDiarios=lsObra('geo_diarios');
+    let h=LS.get(keyDiarios,[]);
+    h.push(d);
+    LS.set(keyDiarios,h);
+
+    // Grava incidentes detalhados na chave prefixada
+    if((d.incidentesDetalhados||[]).length>0){
+      const keyInc=lsObra('geo_incidentes');
+      let inc=LS.get(keyInc,[]);
+      d.incidentesDetalhados.forEach(i=>inc.push(i));
+      LS.set(keyInc,inc);
+    }
+
+    // Grava avanço físico global (lido pelo Dashboard_Financeiro sem prefixo)
+    LS.set('geo_avanco_fisico', d.avancoFisicoGlobal);
+    LS.set('geo_atividades_pct', d.estadoGlobalPct);
+  }catch(e){console.warn('Erro ao salvar no localStorage:',e);}
+  compartilhar(d);
+}
+
+function enviarWhats(){svStep();compartilhar(mkJSON());}
+
+function compartilhar(d){
+  const blob=new Blob([JSON.stringify([d],null,2)],{type:'application/json'});
+  const file=new File([blob],`DiarioObra_${S.data.replace(/\//g,'_')}.json`,{type:'application/json'});
+  if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+    navigator.share({files:[file],title:'📓 Diário de Obra — GeoSistema PRO'})
+      .catch(e=>{if(e.name!=='AbortError')baixar(blob,file.name);});
+  }else{baixar(blob,file.name);showT('📥 Arquivo exportado!');}
+}
+function baixar(b,n){
+  const u=URL.createObjectURL(b),a=document.createElement('a');
+  a.href=u;a.download=n;document.body.appendChild(a);a.click();
+  document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(u),5000);
+}
+
+render();
+</script>
+</body>
+</html>

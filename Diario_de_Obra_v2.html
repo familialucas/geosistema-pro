@@ -1,0 +1,2744 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoSistema PRO — Dashboard de Obras</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0d1117;
+    --surface:   #161b22;
+    --surface2:  #1c2330;
+    --border:    #30363d;
+    --blue:      #1a73e8;
+    --blue-dim:  #1558b0;
+    --teal:      #0dcfb0;
+    --amber:     #f5a623;
+    --red:       #e84040;
+    --green:     #2ea043;
+    --purple:    #a78bfa;
+    --text:      #e6edf3;
+    --muted:     #8b949e;
+    --radius:    10px;
+    --header-h:  64px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    height: var(--header-h);
+    background: rgba(13,17,23,.95);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 28px; gap: 16px;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--blue), var(--teal));
+    display: grid; place-items: center; font-size: 18px;
+  }
+  .logo-text { font-family: 'DM Serif Display', serif; font-size: 18px; letter-spacing: .3px; }
+  .logo-sub  { font-size: 11px; color: var(--muted); font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; }
+
+  /* ── NAV PAGES ── */
+  .nav-pages { display: flex; gap: 4px; margin-left: auto; }
+  .nav-page-btn {
+    padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border);
+    background: transparent; color: var(--muted); font-size: 12px; font-family: 'Sora', sans-serif;
+    cursor: pointer; transition: all .18s; font-weight: 500; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+  }
+  .nav-page-btn:hover { border-color: var(--blue); color: var(--blue); background: rgba(26,115,232,.08); }
+  .nav-page-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+  /* Mobile: esconde texto dos botões de nav, mantém só ícone */
+  @media (max-width: 768px) {
+    .nav-page-btn .nav-txt { display: none; }
+    .nav-page-btn { padding: 6px 8px; }
+    .obra-select-wrap { margin-left: 8px; }
+    .obra-select-wrap select { max-width: 130px; font-size: 11px; }
+    #tipoLabel { display: none; }
+    .logo-sub { display: none; }
+    .live-dot + span { display: none; }
+  }
+  @media (max-width: 480px) {
+    .obra-select-wrap select { max-width: 100px; }
+    header { padding: 0 12px; gap: 8px; }
+  }
+
+  /* ── TABS INTERNOS ── */
+  .tab-bar-wrap {
+    overflow-x: auto; overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex: 1; min-width: 0;
+  }
+  .tab-bar-wrap::-webkit-scrollbar { display: none; }
+  .tab-bar {
+    display: flex; gap: 2px; background: var(--surface2);
+    border-radius: 8px; padding: 3px;
+    width: max-content; min-width: 100%;
+  }
+  .tab-btn {
+    padding: 6px 12px; border-radius: 6px; border: none;
+    background: transparent; color: var(--muted); font-size: 12px;
+    font-family: 'Sora', sans-serif; cursor: pointer; transition: all .18s;
+    font-weight: 500; white-space: nowrap; flex-shrink: 0;
+  }
+  .tab-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+  /* Em telas pequenas: esconde o texto e mostra só o ícone */
+  @media (max-width: 640px) {
+    .tab-btn { padding: 7px 10px; font-size: 11px; }
+    .tab-btn .tab-txt { display: none; }
+    .tab-btn .chip { margin-left: 0; }
+  }
+
+  /* ── STATUS BADGE ── */
+  .badge-construcao { background: rgba(26,115,232,.18); color: var(--blue); border: 1px solid rgba(26,115,232,.35); border-radius: 20px; font-size: 11px; padding: 3px 10px; font-weight: 600; }
+  .badge-reforma    { background: rgba(245,166,35,.18); color: var(--amber); border: 1px solid rgba(245,166,35,.35); border-radius: 20px; font-size: 11px; padding: 3px 10px; font-weight: 600; }
+
+  /* ── SELETOR OBRA ── */
+  .obra-select-wrap { display:flex; align-items:center; gap:8px; margin-left:16px; }
+  .obra-select-wrap select {
+    padding:5px 10px; background:var(--surface2); border:1px solid var(--border);
+    border-radius:7px; color:var(--text); font-size:12px; font-family:'Sora',sans-serif;
+    outline:none; max-width:220px; cursor:pointer;
+  }
+  .obra-add-btn {
+    width:28px; height:28px; border-radius:6px; border:1px solid var(--border);
+    background:transparent; color:var(--muted); font-size:18px; cursor:pointer;
+    display:grid; place-items:center; transition:all .2s; flex-shrink:0; line-height:1;
+  }
+  .obra-add-btn:hover { border-color:var(--blue); color:var(--blue); }
+
+  /* ── GALERIA ── */
+  .galeria-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; }
+  .galeria-thumb {
+    aspect-ratio:1; border-radius:8px; overflow:hidden; position:relative;
+    border:1px solid var(--border); cursor:pointer; transition:transform .2s, border-color .2s;
+    background:var(--surface2);
+  }
+  .galeria-thumb:hover { transform:scale(1.03); border-color:var(--blue); }
+  .galeria-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+  .galeria-thumb .thumb-overlay {
+    position:absolute; inset:0; background:rgba(0,0,0,.5); opacity:0;
+    transition:opacity .2s; display:grid; place-items:center; font-size:24px;
+  }
+  .galeria-thumb:hover .thumb-overlay { opacity:1; }
+  .galeria-thumb .thumb-meta {
+    position:absolute; bottom:0; left:0; right:0;
+    background:linear-gradient(0deg,rgba(0,0,0,.8),transparent);
+    padding:6px 8px 5px; font-size:10px; color:#ccc; font-family:'DM Mono',monospace;
+  }
+  .galeria-thumb .thumb-del {
+    position:absolute; top:5px; right:5px; width:22px; height:22px;
+    background:rgba(232,64,64,.8); border:none; border-radius:4px; color:#fff;
+    font-size:12px; cursor:pointer; display:none; place-items:center;
+  }
+  .galeria-thumb:hover .thumb-del { display:grid; }
+
+  /* ── LIGHTBOX ── */
+  .foto-lightbox {
+    display:none; position:fixed; inset:0; z-index:500;
+    background:rgba(0,0,0,.93); place-items:center; backdrop-filter:blur(8px);
+  }
+  .foto-lightbox.open { display:grid; }
+  .foto-lightbox img { max-width:88vw; max-height:82vh; border-radius:10px; object-fit:contain; }
+  .foto-lb-close {
+    position:fixed; top:18px; right:22px; font-size:22px; color:#fff;
+    cursor:pointer; background:rgba(255,255,255,.12); border:none;
+    border-radius:50%; width:42px; height:42px; display:grid; place-items:center;
+  }
+  .foto-lb-close:hover { background:rgba(255,255,255,.25); }
+  .foto-lb-info {
+    position:fixed; bottom:22px; left:50%; transform:translateX(-50%);
+    background:rgba(0,0,0,.7); padding:7px 18px; border-radius:20px;
+    font-size:11px; color:var(--muted); font-family:'DM Mono',monospace; white-space:nowrap;
+  }
+  .foto-nav {
+    position:fixed; top:50%; transform:translateY(-50%);
+    background:rgba(255,255,255,.12); border:none; color:#fff;
+    width:42px; height:42px; border-radius:50%; font-size:22px;
+    cursor:pointer; display:grid; place-items:center;
+  }
+  .foto-nav:hover { background:rgba(255,255,255,.25); }
+  .foto-nav.prev { left:18px; }
+  .foto-nav.next { right:18px; }
+
+  /* ── DIÁRIO REFORMA (borda âmbar) ── */
+  .diario-item-reform { border-left-color:var(--amber) !important; }
+
+  /* ── LAYOUT ── */
+  main { padding: 28px; max-width: 1400px; margin: 0 auto; }
+
+  /* ── TOP BAR ── */
+  .top-bar {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 28px; gap: 20px; flex-wrap: wrap;
+  }
+  .obra-title h2 { font-family: 'DM Serif Display', serif; font-size: 26px; line-height: 1.2; }
+  .obra-title p  { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .btn-primary {
+    padding: 9px 18px; background: var(--blue); border: none; border-radius: 8px;
+    color: #fff; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: background .2s; white-space: nowrap;
+  }
+  .btn-primary:hover { background: var(--blue-dim); }
+  .btn-outline {
+    padding: 9px 16px; background: transparent; border: 1px solid var(--border);
+    border-radius: 8px; color: var(--muted); font-family: 'Sora', sans-serif;
+    font-size: 13px; cursor: pointer; transition: all .2s; white-space: nowrap;
+  }
+  .btn-outline:hover { border-color: var(--blue); color: var(--blue); }
+  .btn-danger {
+    padding: 7px 14px; background: rgba(232,64,64,.15); border: 1px solid rgba(232,64,64,.4);
+    border-radius: 7px; color: var(--red); font-family: 'Sora', sans-serif;
+    font-size: 12px; cursor: pointer; transition: all .2s; font-weight: 600;
+  }
+  .btn-danger:hover { background: rgba(232,64,64,.25); }
+  .btn-success {
+    padding: 7px 14px; background: rgba(46,160,67,.15); border: 1px solid rgba(46,160,67,.4);
+    border-radius: 7px; color: var(--green); font-family: 'Sora', sans-serif;
+    font-size: 12px; cursor: pointer; transition: all .2s; font-weight: 600;
+  }
+  .btn-success:hover { background: rgba(46,160,67,.25); }
+
+  /* ── CARDS KPI ── */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .kpi-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 18px; position: relative; overflow: hidden; transition: transform .2s, border-color .2s;
+  }
+  .kpi-card:hover { transform: translateY(-2px); border-color: var(--blue); }
+  .kpi-card::before {
+    content: ''; position: absolute; inset: 0; opacity: .06;
+    background: radial-gradient(circle at top left, currentColor 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .kpi-card.blue   { color: var(--blue); }
+  .kpi-card.teal   { color: var(--teal); }
+  .kpi-card.amber  { color: var(--amber); }
+  .kpi-card.red    { color: var(--red); }
+  .kpi-card.green  { color: var(--green); }
+  .kpi-card.purple { color: var(--purple); }
+  .kpi-icon { font-size: 20px; margin-bottom: 8px; }
+  .kpi-value { font-size: 30px; font-weight: 700; line-height: 1; color: var(--text); }
+  .kpi-label { font-size: 11px; color: var(--muted); margin-top: 5px; font-weight: 500; letter-spacing: .3px; }
+  .kpi-delta { font-size: 11px; margin-top: 3px; font-family: 'DM Mono', monospace; }
+
+  /* ── SECTIONS ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+  @media (max-width: 1100px) { .grid-3 { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 900px)  { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+  }
+  .card-header {
+    padding: 14px 18px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  }
+  .card-title { font-size: 13px; font-weight: 600; letter-spacing: .2px; }
+  .card-body  { padding: 18px; }
+
+  /* ── PROGRESS ── */
+  .progress-wrap { margin-bottom: 12px; }
+  .progress-meta { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
+  .progress-meta .name { color: var(--text); font-weight: 500; }
+  .progress-meta .pct  { color: var(--muted); font-family: 'DM Mono', monospace; }
+  .progress-bar { height: 7px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 99px; transition: width .8s cubic-bezier(.4,0,.2,1); }
+  .fill-blue  { background: linear-gradient(90deg, var(--blue), var(--teal)); }
+  .fill-amber { background: var(--amber); }
+  .fill-green { background: var(--green); }
+  .fill-red   { background: var(--red); }
+  .fill-purple{ background: var(--purple); }
+
+  .mini-bar { width: 70px; height: 5px; background: var(--surface2); border-radius: 99px; overflow: hidden; display: inline-block; vertical-align: middle; }
+  .mini-fill { height: 100%; border-radius: 99px; }
+
+  /* ── CRONOGRAMA TABLE ── */
+  .gantt-wrap { overflow-x: auto; }
+  .gantt-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 620px; }
+  .gantt-table th {
+    padding: 8px 10px; text-align: left; font-size: 11px; font-weight: 600;
+    color: var(--muted); text-transform: uppercase; letter-spacing: .8px;
+    border-bottom: 1px solid var(--border); background: var(--surface2);
+  }
+  .gantt-table td { padding: 9px 10px; border-bottom: 1px solid rgba(48,54,61,.5); vertical-align: middle; }
+  .gantt-table tr:last-child td { border-bottom: none; }
+  .gantt-table tr:hover td { background: rgba(255,255,255,.02); }
+  .fase-tag {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px;
+  }
+  .tag-proc    { background: rgba(139,148,158,.15); color: var(--muted); }
+  .tag-terreno { background: rgba(245,166,35,.15); color: var(--amber); }
+  .tag-projeto { background: rgba(26,115,232,.15); color: var(--blue); }
+  .tag-infra   { background: rgba(13,207,176,.15); color: var(--teal); }
+  .tag-super   { background: rgba(46,160,67,.15); color: var(--green); }
+  .tag-alv     { background: rgba(139,148,158,.15); color: #aaa; }
+  .tag-piso    { background: rgba(245,166,35,.12); color: #d4a017; }
+  .tag-elet    { background: rgba(232,64,64,.15); color: var(--red); }
+  .tag-hidro   { background: rgba(26,115,232,.2); color: #5ba4ff; }
+  .tag-cob     { background: rgba(13,207,176,.12); color: #08a98e; }
+  .tag-rev     { background: rgba(167,139,250,.15); color: #a78bfa; }
+  .tag-pint    { background: rgba(245,166,35,.2); color: #f9a826; }
+  .tag-acab    { background: rgba(46,160,67,.2); color: #3fb557; }
+
+  /* ── STATUS DOTS ── */
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+  .dot-done     { background: var(--green); }
+  .dot-progress { background: var(--amber); box-shadow: 0 0 5px var(--amber); }
+  .dot-pending  { background: var(--border); }
+  .dot-blocked  { background: var(--red); }
+
+  /* ── INCIDENTES ── */
+  .incident-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid rgba(48,54,61,.5);
+  }
+  .incident-item:last-child { border-bottom: none; }
+  .incident-icon {
+    width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0;
+    display: grid; place-items: center; font-size: 16px;
+  }
+  .inc-leve    { background: rgba(46,160,67,.15); border: 1px solid rgba(46,160,67,.3); }
+  .inc-medio   { background: rgba(245,166,35,.15); border: 1px solid rgba(245,166,35,.3); }
+  .inc-grave   { background: rgba(232,64,64,.15); border: 1px solid rgba(232,64,64,.3); }
+  .inc-critico { background: rgba(167,139,250,.15); border: 1px solid rgba(167,139,250,.5); animation: pulse-border 1.5s infinite; }
+  @keyframes pulse-border {
+    0%,100% { box-shadow: 0 0 0 0 rgba(167,139,250,.4); }
+    50%      { box-shadow: 0 0 0 4px rgba(167,139,250,.1); }
+  }
+  .incident-body { flex: 1; min-width: 0; }
+  .incident-title { font-size: 13px; font-weight: 600; }
+  .incident-meta  { font-size: 11px; color: var(--muted); margin-top: 3px; font-family: 'DM Mono', monospace; }
+  .incident-desc  { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+  .grav-badge {
+    display: inline-flex; padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; flex-shrink: 0;
+  }
+  .grav-Leve, .grav-leve         { background: rgba(46,160,67,.2);   color: var(--green); }
+  .grav-Médio, .grav-moderado  { background: rgba(245,166,35,.2);  color: var(--amber); }
+  .grav-Grave, .grav-grave     { background: rgba(232,64,64,.2);   color: var(--red); }
+  .grav-Crítico, .grav-critico { background: rgba(167,139,250,.25); color: var(--purple); }
+
+  /* ── DIÁRIOS ── */
+  .diario-item {
+    padding: 14px;
+    background: var(--surface2);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border-left: 3px solid var(--blue);
+    transition: border-color .2s;
+  }
+  .diario-item:hover { border-left-color: var(--teal); }
+  .diario-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+  .diario-date { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+  .diario-obra { font-size: 12px; font-weight: 600; }
+  .diario-resp { font-size: 11px; color: var(--teal); margin-top: 2px; }
+  .diario-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .diario-tag { font-size: 10px; padding: 2px 7px; border-radius: 4px; background: rgba(26,115,232,.15); color: #93c5fd; border: 1px solid rgba(26,115,232,.25); }
+  .diario-resumo { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+
+  /* ── APROVAÇÕES ── */
+  .aprov-item {
+    background: var(--surface2); border-radius: 8px; padding: 14px;
+    margin-bottom: 10px; border: 1px solid var(--border);
+    transition: border-color .2s;
+  }
+  .aprov-item.pendente { border-left: 3px solid var(--amber); }
+  .aprov-item.aprovado { border-left: 3px solid var(--green); opacity: .7; }
+  .aprov-item.rejeitado { border-left: 3px solid var(--red); opacity: .7; }
+  .aprov-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .aprov-title { font-size: 13px; font-weight: 600; }
+  .aprov-meta { font-size: 11px; color: var(--muted); margin-top: 3px; font-family: 'DM Mono', monospace; }
+  .aprov-desc { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+  .aprov-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .aprov-status {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  }
+  .st-pendente  { background: rgba(245,166,35,.15); color: var(--amber); border: 1px solid rgba(245,166,35,.3); }
+  .st-aprovado  { background: rgba(46,160,67,.15); color: var(--green); border: 1px solid rgba(46,160,67,.3); }
+  .st-rejeitado { background: rgba(232,64,64,.15); color: var(--red); border: 1px solid rgba(232,64,64,.3); }
+
+  /* ── TIMELINE ── */
+  .timeline { position: relative; padding-left: 22px; }
+  .timeline::before { content: ''; position: absolute; left: 6px; top: 4px; bottom: 4px; width: 2px; background: var(--border); border-radius: 2px; }
+  .tl-item { position: relative; margin-bottom: 18px; }
+  .tl-dot {
+    position: absolute; left: -22px; top: 3px;
+    width: 13px; height: 13px; border-radius: 50%; border: 2px solid; background: var(--bg);
+  }
+  .tl-dot.done     { border-color: var(--green); background: var(--green); }
+  .tl-dot.progress { border-color: var(--amber); background: var(--amber); }
+  .tl-dot.pending  { border-color: var(--border); }
+  .tl-title { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+  .tl-meta  { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+  /* ── SWITCH TIPO OBRA ── */
+  .switch-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .type-btn {
+    padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border);
+    background: transparent; color: var(--muted); font-size: 12px; font-weight: 600;
+    cursor: pointer; font-family: 'Sora', sans-serif; transition: all .2s;
+  }
+  .type-btn.active-construcao { background: rgba(26,115,232,.2); border-color: var(--blue); color: var(--blue); }
+  .type-btn.active-reforma    { background: rgba(245,166,35,.2); border-color: var(--amber); color: var(--amber); }
+
+  /* ── VISTORIA ── */
+  .upload-zone {
+    border: 2px dashed var(--border); border-radius: var(--radius);
+    padding: 28px; text-align: center; cursor: pointer; transition: all .2s;
+  }
+  .upload-zone:hover { border-color: var(--blue); background: rgba(26,115,232,.04); }
+  .upload-zone p { font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .upload-icon { font-size: 32px; }
+  .v-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px; }
+  .v-campo { display: flex; flex-direction: column; gap: 2px; padding: 10px; background: var(--surface2); border-radius: 6px; }
+  .v-campo .vlabel { color: var(--muted); font-size: 11px; }
+  .v-campo .vval   { color: var(--text); font-weight: 500; }
+  .badge-urg { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .urg-Normal   { background: rgba(46,160,67,.2); color: var(--green); }
+  .urg-Atencao  { background: rgba(245,166,35,.2); color: var(--amber); }
+  .urg-Urgente  { background: rgba(232,64,64,.2); color: var(--red); }
+  .alert-box { display: flex; gap: 8px; align-items: flex-start; padding: 10px 14px; border-radius: 8px; font-size: 12px; margin-bottom: 10px; }
+  .alert-red    { background: rgba(232,64,64,.1); border: 1px solid rgba(232,64,64,.3); color: #fca5a5; }
+  .alert-amber  { background: rgba(245,166,35,.1); border: 1px solid rgba(245,166,35,.3); color: #fde68a; }
+  .alert-blue   { background: rgba(26,115,232,.1); border: 1px solid rgba(26,115,232,.3); color: #93c5fd; }
+
+  /* ── MODAL ── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 200; place-items: center; backdrop-filter: blur(4px); }
+  .modal-overlay.open { display: grid; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 26px; width: 90%; max-width: 520px; max-height: 82vh; overflow-y: auto;
+  }
+  .modal h3 { font-family: 'DM Serif Display', serif; font-size: 20px; margin-bottom: 16px; }
+  .form-group { margin-bottom: 13px; }
+  .form-group label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; font-weight: 500; }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%; padding: 9px 12px; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 7px; color: var(--text); font-family: 'Sora', sans-serif; font-size: 13px; outline: none;
+    transition: border-color .2s;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--blue); }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+  .btn-modal-cancel { padding: 8px 16px; background: transparent; border: 1px solid var(--border); border-radius: 7px; color: var(--muted); font-family: 'Sora', sans-serif; font-size: 13px; cursor: pointer; }
+  .btn-modal-save   { padding: 8px 16px; background: var(--blue); border: none; border-radius: 7px; color: #fff; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state { text-align: center; padding: 32px 20px; }
+  .empty-state .icon { font-size: 36px; margin-bottom: 10px; }
+  .empty-state p { font-size: 13px; color: var(--muted); }
+  .empty-state small { font-size: 11px; color: var(--muted); opacity: .6; margin-top: 4px; display: block; }
+
+  /* ── FOOTER ── */
+  footer { text-align: center; padding: 28px; color: var(--muted); font-size: 11px; border-top: 1px solid var(--border); margin-top: 20px; }
+
+  /* ── LIVE PULSE ── */
+  .live-dot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--green); box-shadow: 0 0 0 0 rgba(46,160,67,.6);
+    animation: live-pulse 2s infinite;
+  }
+  @keyframes live-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(46,160,67,.6); }
+    70%  { box-shadow: 0 0 0 7px rgba(46,160,67,0); }
+    100% { box-shadow: 0 0 0 0 rgba(46,160,67,0); }
+  }
+
+  /* Animations */
+  @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+  .kpi-card, .card { animation: fadeUp .35s ease both; }
+  .kpi-card:nth-child(1) { animation-delay: .04s; }
+  .kpi-card:nth-child(2) { animation-delay: .08s; }
+  .kpi-card:nth-child(3) { animation-delay: .12s; }
+  .kpi-card:nth-child(4) { animation-delay: .16s; }
+  .kpi-card:nth-child(5) { animation-delay: .20s; }
+  .kpi-card:nth-child(6) { animation-delay: .24s; }
+
+  /* ── SCROLL ÁREA ── */
+  .scroll-area { max-height: 340px; overflow-y: auto; }
+  .scroll-area::-webkit-scrollbar { width: 4px; }
+  .scroll-area::-webkit-scrollbar-track { background: transparent; }
+  .scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* ── CHIP CONTADOR ── */
+  .chip {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 18px; height: 18px; padding: 0 5px;
+    border-radius: 99px; font-size: 10px; font-weight: 700;
+    background: var(--red); color: #fff; margin-left: 5px;
+  }
+  .chip.amber { background: var(--amber); color: #000; }
+  .chip.green { background: var(--green); }
+
+  /* ── APROVAÇÃO MODAL TEXTAREA ── */
+  #obsAprov { resize: vertical; min-height: 70px; }
+</style>
+  <!-- ══ PWA GeoSistema PRO ══ -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#1a73e8">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="GeoSistema PRO">
+  <link rel="apple-touch-icon" href="./assets/icon-192.png">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(r => console.log('SW registrado:', r.scope))
+          .catch(e => console.warn('SW falhou:', e));
+      });
+    }
+  </script>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🏗️</div>
+    <div>
+      <div class="logo-text">GeoSistema PRO</div>
+      <div class="logo-sub">Dashboard de Obras</div>
+    </div>
+  </div>
+  <div class="obra-select-wrap">
+    <select id="obraAtivaSelect" onchange="trocarObraAtiva(this.value)"></select>
+    <button class="obra-add-btn" onclick="abrirModalNovaObra()" title="Adicionar obra">＋</button>
+    <div id="tipoLabel"><span class="badge-construcao">Nova Construção</span></div>
+  </div>
+  <div style="margin-left:auto; display:flex; align-items:center; gap:5px; flex-shrink:0;">
+    <span class="live-dot"></span>
+    <span style="font-size:11px; color:var(--muted); margin-right:6px;" class="nav-txt">Ao vivo</span>
+    <a href="Dashboard_obra.html" class="nav-page-btn">📋 <span class="nav-txt">Encarregado</span></a>
+    <button class="nav-page-btn active">🏗️ <span class="nav-txt">Obras</span></button>
+    <a href="Dashboard_Financeiro.html" class="nav-page-btn">💰 <span class="nav-txt">Financeiro</span></a>
+    <a href="Dashboard_Manutencao.html" class="nav-page-btn">🔧 <span class="nav-txt">Manutenção</span></a>
+  </div>
+</header>
+
+<!-- ── MAIN ── -->
+<main>
+
+  <!-- ════════ TAB BAR ════════ -->
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; gap:10px;">
+    <div class="tab-bar-wrap">
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tabBtnDash"       onclick="showTab('dashboard',this)">📊 <span class="tab-txt">Dashboard</span></button>
+        <button class="tab-btn"        id="tabBtnCronograma" onclick="showTab('cronograma',this)">📅 <span class="tab-txt">Cronograma</span></button>
+        <button class="tab-btn"        id="tabBtnDiarios"    onclick="showTab('diarios',this)">📓 <span class="tab-txt">Diários</span> <span class="chip amber" id="chipDiarios">0</span></button>
+        <button class="tab-btn"        id="tabBtnIncidentes" onclick="showTab('incidentes',this)">⚠️ <span class="tab-txt">Incidentes</span> <span class="chip" id="chipIncidentes">0</span></button>
+        <button class="tab-btn"        id="tabBtnAprovacoes" onclick="showTab('aprovacoes',this)">✅ <span class="tab-txt">Aprovações</span> <span class="chip amber" id="chipAprov">0</span></button>
+        <button class="tab-btn"        id="tabBtnVistoria"   onclick="showTab('vistoria',this)">🔍 <span class="tab-txt">Vistoria</span></button>
+        <button class="tab-btn"        id="tabBtnEscopo"     onclick="showTab('escopo',this)">📦 <span class="tab-txt">Escopo</span></button>
+        <button class="tab-btn"        id="tabBtnGaleria"    onclick="showTab('galeria',this)">🖼️ <span class="tab-txt">Galeria</span> <span class="chip" id="chipFotos">0</span></button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-shrink:0;">
+      <button class="btn-outline" onclick="syncLocalStorage()" title="Sincronizar">🔄</button>
+      <button class="btn-primary" onclick="openModal()">＋ <span class="tab-txt">Progresso</span></button>
+    </div>
+  </div>
+
+  <!-- ════════ TAB: DASHBOARD ════════ -->
+  <div id="tab-dashboard">
+    <div class="top-bar" style="margin-bottom:20px;">
+      <div class="obra-title">
+        <h2>Igreja Lauro de Freitas Central</h2>
+        <p>Simões Filho / BA &nbsp;·&nbsp; Início: 30 Out 2023 &nbsp;·&nbsp; Previsão: 08 Dez 2023</p>
+      </div>
+      <div class="switch-row">
+        <button class="type-btn active-construcao" id="btnConst" onclick="setTipo('construcao')">🏗️ Nova Construção</button>
+        <button class="type-btn" id="btnRef" onclick="setTipo('reforma')">🔧 Reforma</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card blue">
+        <div class="kpi-icon">📋</div>
+        <div class="kpi-value" id="kpiTotal">77</div>
+        <div class="kpi-label">Atividades no Cronograma</div>
+        <div class="kpi-delta" style="color:var(--blue);">13 fases mapeadas</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-icon">✅</div>
+        <div class="kpi-value" id="kpiConcluidas">0</div>
+        <div class="kpi-label">Atividades Concluídas</div>
+        <div class="kpi-delta" style="color:var(--green);" id="kpiPctConcluidas">+0%</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-icon">⚡</div>
+        <div class="kpi-value" id="kpiAndamento">0</div>
+        <div class="kpi-label">Em Andamento</div>
+        <div class="kpi-delta" style="color:var(--amber);" id="kpiUltimoEnvio">—</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-icon">⏳</div>
+        <div class="kpi-value" id="kpiPendentes">0</div>
+        <div class="kpi-label">Pendentes</div>
+        <div class="kpi-delta" style="color:var(--muted);" id="kpiPctPend">—</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-icon">⚠️</div>
+        <div class="kpi-value" id="kpiIncidentes">0</div>
+        <div class="kpi-label">Incidentes Registrados</div>
+        <div class="kpi-delta" style="color:var(--purple);" id="kpiIncGrave">—</div>
+      </div>
+      <div class="kpi-card teal">
+        <div class="kpi-icon">📓</div>
+        <div class="kpi-value" id="kpiDiarios">0</div>
+        <div class="kpi-label">Diários Enviados</div>
+        <div class="kpi-delta" style="color:var(--teal);" id="kpiAvFisico">Avanço: 0%</div>
+      </div>
+    </div>
+
+    <!-- PROGRESSO POR FASE + INCIDENTES RECENTES -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📊 Progresso por Fase</span>
+          <span style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;" id="totalPct">0% geral</span>
+        </div>
+        <div class="card-body scroll-area" id="progressFases"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">⚠️ Incidentes Recentes</span>
+          <button class="tab-btn" style="font-size:11px;padding:4px 10px;" onclick="showTab('incidentes', document.getElementById('tabBtnIncidentes'))">Ver todos</button>
+        </div>
+        <div class="card-body scroll-area" id="incidentesRecentes">
+          <div class="empty-state">
+            <div class="icon">🟢</div>
+            <p>Nenhum incidente registrado</p>
+            <small>Os dados vêm do Diário de Obra v2</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LINHA DO TEMPO + DIÁRIOS RECENTES -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📅 Marcos da Obra</span>
+          <span style="font-size:11px;color:var(--muted);">Linha do tempo</span>
+        </div>
+        <div class="card-body">
+          <div class="timeline" id="timelineMarcos">
+            <div class="tl-item">
+              <div class="tl-dot done"></div>
+              <div class="tl-title">Abertura & Planejamento</div>
+              <div class="tl-meta">30 Out 2023 · Concluído</div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot done"></div>
+              <div class="tl-title">Proc. Administrativos</div>
+              <div class="tl-meta">30 Out – 07 Nov 2023 · Concluído</div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot progress"></div>
+              <div class="tl-title">Aprovação de Projeto & Alvará</div>
+              <div class="tl-meta">30 Out – 24 Nov 2023 · Em andamento</div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot progress"></div>
+              <div class="tl-title">Infraestrutura & Superestrutura</div>
+              <div class="tl-meta">30 Out – 27 Nov 2023 · Em andamento</div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot pending"></div>
+              <div class="tl-title">Acabamentos & AVCB</div>
+              <div class="tl-meta">Previsto: até 08 Dez 2023</div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot pending"></div>
+              <div class="tl-title">Habite-se & Entrega</div>
+              <div class="tl-meta">Previsto: 08 Dez 2023</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📓 Últimos Diários</span>
+          <button class="tab-btn" style="font-size:11px;padding:4px 10px;" onclick="showTab('diarios', document.getElementById('tabBtnDiarios'))">Ver todos</button>
+        </div>
+        <div class="card-body scroll-area" id="diariosRecentes">
+          <div class="empty-state">
+            <div class="icon">📭</div>
+            <p>Nenhum diário enviado ainda</p>
+            <small>Sincronize com o Diário de Obra v2</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ TAB: CRONOGRAMA ════════ -->
+  <div id="tab-cronograma" style="display:none;">
+    <div class="top-bar">
+      <div class="obra-title">
+        <h2>Cronograma de Atividades</h2>
+        <p>Modelo: <span id="modeloLabel">Nova Construção</span> &nbsp;·&nbsp; Lauro de Freitas Central</p>
+      </div>
+      <button class="btn-outline" onclick="exportarCronograma()">⬇️ Exportar JSON</button>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📋 Todas as Atividades</span>
+        <input id="searchAtiv" type="text" placeholder="Buscar atividade..." style="padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;width:200px;font-family:'Sora',sans-serif;outline:none;">
+      </div>
+      <div class="gantt-wrap">
+        <table class="gantt-table">
+          <thead>
+            <tr>
+              <th>ID</th><th>Fase</th><th>Atividade</th><th>Dur.</th>
+              <th>Início</th><th>Término</th><th>Progresso</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyCronograma"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ TAB: DIÁRIOS ════════ -->
+  <div id="tab-diarios" style="display:none;">
+    <div class="top-bar">
+      <div class="obra-title">
+        <h2>Diários de Obra Enviados</h2>
+        <p>Registros enviados pelo encarregado via Diário de Obra v2</p>
+      </div>
+      <button class="btn-outline" onclick="syncLocalStorage()">🔄 Sincronizar Dados</button>
+    </div>
+    <div id="diariosListaCompleta">
+      <div class="empty-state" style="padding:60px 20px;">
+        <div class="icon">📭</div>
+        <p>Nenhum diário encontrado no localStorage</p>
+        <small>Envie um diário pelo Diário de Obra v2 e clique em Sincronizar</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ TAB: INCIDENTES ════════ -->
+  <div id="tab-incidentes" style="display:none;">
+    <div class="top-bar">
+      <div class="obra-title">
+        <h2>Painel de Incidentes</h2>
+        <p>Tempo real · Dados do Diário de Obra v2</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <select id="filtroGrav" onchange="renderIncidentesCompleto()" style="padding:7px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:12px;font-family:'Sora',sans-serif;outline:none;">
+          <option value="">Todas as gravidades</option>
+          <option value="Leve">Leve</option>
+          <option value="Médio">Médio</option>
+          <option value="Grave">Grave</option>
+          <option value="Crítico">Crítico</option>
+        </select>
+        <button class="btn-outline" onclick="syncLocalStorage()">🔄 Atualizar</button>
+      </div>
+    </div>
+
+    <!-- KPIs incidentes -->
+    <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr);">
+      <div class="kpi-card green">
+        <div class="kpi-icon">🟢</div>
+        <div class="kpi-value" id="incKpiLeve">0</div>
+        <div class="kpi-label">Leve</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-icon">🟡</div>
+        <div class="kpi-value" id="incKpiMedio">0</div>
+        <div class="kpi-label">Médio</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-icon">🔴</div>
+        <div class="kpi-value" id="incKpiGrave">0</div>
+        <div class="kpi-label">Grave</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-icon">🚨</div>
+        <div class="kpi-value" id="incKpiCritico">0</div>
+        <div class="kpi-label">Crítico</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">⚠️ Todos os Incidentes</span>
+        <span style="font-size:11px;color:var(--muted);" id="incTotal">0 registros</span>
+      </div>
+      <div class="card-body" id="incidentesListaCompleta">
+        <div class="empty-state">
+          <div class="icon">🟢</div>
+          <p>Nenhum incidente registrado</p>
+          <small>Os incidentes são registrados pelo encarregado no Diário de Obra v2</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ TAB: APROVAÇÕES ════════ -->
+  <div id="tab-aprovacoes" style="display:none;">
+    <div class="top-bar">
+      <div class="obra-title">
+        <h2>Aprovações Administrativas</h2>
+        <p>Exclusivo do gestor · Liberações e deliberações de obra</p>
+      </div>
+      <button class="btn-primary" onclick="openModalAprov()">＋ Nova Solicitação</button>
+    </div>
+
+    <div class="alert-box alert-amber" style="margin-bottom:18px;">
+      🔒 <strong>Área restrita ao gestor.</strong> As aprovações aqui registradas ficam visíveis ao encarregado no Diário de Obra.
+    </div>
+
+    <!-- KPIs aprovações -->
+    <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom:20px;">
+      <div class="kpi-card amber">
+        <div class="kpi-icon">⏳</div>
+        <div class="kpi-value" id="aprovKpiPend">0</div>
+        <div class="kpi-label">Pendentes</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-icon">✅</div>
+        <div class="kpi-value" id="aprovKpiAprov">0</div>
+        <div class="kpi-label">Aprovadas</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-icon">❌</div>
+        <div class="kpi-value" id="aprovKpiRej">0</div>
+        <div class="kpi-label">Rejeitadas</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📋 Solicitações de Aprovação</span>
+        <select id="filtroAprov" onchange="renderAprovacoes()" style="padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Sora',sans-serif;outline:none;">
+          <option value="">Todos</option>
+          <option value="pendente">Pendentes</option>
+          <option value="aprovado">Aprovadas</option>
+          <option value="rejeitado">Rejeitadas</option>
+        </select>
+      </div>
+      <div class="card-body" id="aprovacoesList">
+        <div class="empty-state">
+          <div class="icon">📋</div>
+          <p>Nenhuma solicitação cadastrada</p>
+          <small>Clique em "+ Nova Solicitação" para criar</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ TAB: VISTORIA ════════ -->
+  <div id="tab-vistoria" style="display:none;">
+    <div class="top-bar">
+      <div class="obra-title">
+        <h2>Vistoria Vinculada</h2>
+        <p>Importe o JSON gerado pelo app de vistoria para vincular ao cronograma</p>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><span class="card-title">📂 Importar JSON de Vistoria</span></div>
+        <div class="card-body">
+          <div class="upload-zone" onclick="document.getElementById('jsonInput').click()">
+            <div class="upload-icon">📋</div>
+            <p>Clique para selecionar o arquivo <strong style="color:var(--text);">.json</strong> exportado pelo Vistoria Pro</p>
+          </div>
+          <input type="file" id="jsonInput" accept=".json" style="display:none" onchange="carregarVistoria(this)">
+        </div>
+      </div>
+      <div class="card" id="cardVistoria">
+        <div class="card-header"><span class="card-title">📄 Dados da Vistoria</span></div>
+        <div class="card-body" id="vistoriaBody">
+          <p style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0;">Nenhuma vistoria carregada.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════ TAB: ESCOPO ════════ -->
+  <div id="tab-escopo" style="display:none;">
+    <!-- Aviso obra em andamento sem cadastro prévio -->
+    <div id="alertaObraAndamento" style="display:none;margin-bottom:18px;"
+         class="alert-box alert-amber">
+      ⚡ <strong>Obra em andamento.</strong>
+      O avanço inicial foi carregado a partir da estimativa informada no cadastro.
+      Ajuste os percentuais abaixo conforme a situação real de cada atividade.
+      <span id="alertaSemOrc" style="display:none;">
+        &nbsp;·&nbsp; ⚠️ <strong>Sem orçamento formal</strong> — os valores são estimativas baseadas no escopo padrão.
+      </span>
+    </div>
+    <div class="top-bar">
+      <div class="obra-title">
+        <h2>Escopo Padrão de Obra</h2>
+        <p>Cronograma de atividades e orçamento base por tipo de obra</p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <div class="switch-row">
+          <button class="type-btn active-construcao" id="escopoBtnConst" onclick="setEscopoTipo('construcao')">🏗️ Nova Construção</button>
+          <button class="type-btn" id="escopoBtnRef" onclick="setEscopoTipo('reforma')">🔧 Reforma</button>
+        </div>
+        <button class="btn-outline" onclick="exportarEscopo()">⬇️ Exportar JSON</button>
+      </div>
+    </div>
+
+    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:20px;">
+      <div class="kpi-card blue">
+        <div class="kpi-icon">📋</div>
+        <div class="kpi-value" id="escopoKpiTotal">0</div>
+        <div class="kpi-label">Total de Atividades</div>
+      </div>
+      <div class="kpi-card teal">
+        <div class="kpi-icon">🏛️</div>
+        <div class="kpi-value" id="escopoKpiFases">0</div>
+        <div class="kpi-label">Fases / WBS</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-icon">⏱️</div>
+        <div class="kpi-value" id="escopoKpiDias">0</div>
+        <div class="kpi-label">Dias (estimativa)</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-icon">✅</div>
+        <div class="kpi-value" id="escopoKpiConc">0</div>
+        <div class="kpi-label">Concluídas</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:18px;">
+      <div class="card-header">
+        <span class="card-title">💰 Orçamento Base</span>
+        <span id="escopoTipoLabel" style="font-size:12px;color:var(--muted);">Nova Construção</span>
+      </div>
+      <div class="card-body">
+        <div id="orcamentoContainer" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;"></div>
+        <div style="margin-top:16px;padding:14px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+            <span style="font-size:13px;font-weight:600;">Total Estimado</span>
+            <span id="escopoTotal" style="font-size:22px;font-weight:700;color:var(--teal);font-family:'DM Mono',monospace;">R$ 0,00</span>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Valores baseados no escopo padrão. Ajuste conforme medições locais.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" id="escopoTabelaTitulo">📋 Atividades — Nova Construção</span>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="searchEscopo" type="text" placeholder="Buscar atividade..." oninput="renderEscopoTabela()"
+            style="padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+                   color:var(--text);font-size:12px;width:200px;font-family:'Sora',sans-serif;outline:none;">
+          <select id="filtroWbs" onchange="renderEscopoTabela()"
+            style="padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+                   color:var(--text);font-size:12px;font-family:'Sora',sans-serif;outline:none;">
+            <option value="">Todas as fases</option>
+          </select>
+        </div>
+      </div>
+      <div class="gantt-wrap">
+        <table class="gantt-table">
+          <thead>
+            <tr>
+              <th>Cód.</th><th>WBS</th><th>Atividade</th><th>Status</th>
+              <th>Início</th><th>Término</th><th>Progresso</th><th>Ação</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyEscopo"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ TAB: GALERIA ════════ -->
+  <div id="tab-galeria" style="display:none;">
+    <div class="top-bar">
+      <div class="obra-title">
+        <h2>Galeria de Fotos</h2>
+        <p id="galeriaSubtitulo">Registros fotográficos dos diários de obra</p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <select id="filtroGaleriaObra" onchange="renderGaleria()"
+          style="padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:12px;font-family:'Sora',sans-serif;outline:none;">
+          <option value="">Todas as obras</option>
+        </select>
+        <select id="filtroGaleriaData" onchange="renderGaleria()"
+          style="padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:12px;font-family:'Sora',sans-serif;outline:none;">
+          <option value="">Todas as datas</option>
+        </select>
+        <label style="padding:8px 14px;background:var(--blue);border-radius:8px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .2s;"
+               onmouseover="this.style.background='var(--blue-dim)'" onmouseout="this.style.background='var(--blue)'">
+          📷 Adicionar Fotos
+          <input type="file" id="inputFotos" accept="image/*" multiple style="display:none" onchange="adicionarFotos(this)">
+        </label>
+      </div>
+    </div>
+
+    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:20px;">
+      <div class="kpi-card blue"><div class="kpi-icon">🖼️</div><div class="kpi-value" id="galKpiTotal">0</div><div class="kpi-label">Total de Fotos</div></div>
+      <div class="kpi-card teal"><div class="kpi-icon">🏗️</div><div class="kpi-value" id="galKpiConstrucao">0</div><div class="kpi-label">Construção</div></div>
+      <div class="kpi-card amber"><div class="kpi-icon">🔧</div><div class="kpi-value" id="galKpiReforma">0</div><div class="kpi-label">Reforma</div></div>
+      <div class="kpi-card green"><div class="kpi-icon">📅</div><div class="kpi-value" id="galKpiHoje">0</div><div class="kpi-label">Hoje</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📸 Fotos Registradas</span>
+        <span id="galContador" style="font-size:11px;color:var(--muted);">0 fotos</span>
+      </div>
+      <div class="card-body">
+        <div id="galeriaContainer" class="galeria-grid"></div>
+        <div id="galeriaVazia" style="text-align:center;padding:50px 20px;">
+          <div style="font-size:48px;margin-bottom:12px;">📷</div>
+          <p style="color:var(--muted);font-size:13px;">Nenhuma foto encontrada</p>
+          <small style="color:var(--muted);">Clique em "Adicionar Fotos" para incluir imagens</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ════ LIGHTBOX ════ -->
+<div class="foto-lightbox" id="fotoLightbox" onclick="fecharLightbox(event)">
+  <button class="foto-lb-close" onclick="fecharLightbox()">✕</button>
+  <button class="foto-nav prev" onclick="navFoto(-1);event.stopPropagation()">‹</button>
+  <img id="fotoLightboxImg" src="" alt="">
+  <button class="foto-nav next" onclick="navFoto(1);event.stopPropagation()">›</button>
+  <div class="foto-lb-info" id="fotoLightboxInfo"></div>
+</div>
+
+<!-- ════ MODAL NOVA OBRA ════ -->
+<div class="modal-overlay" id="modalNovaObraOverlay">
+  <div class="modal" style="max-width:420px;">
+    <h3>➕ Nova Obra</h3>
+    <div class="form-group">
+      <label>Nome da Obra *</label>
+      <input id="novaObraNome" type="text" placeholder="Ex: Igreja Simões Filho Norte" style="width:100%;">
+    </div>
+    <div class="form-group">
+      <label>Tipo</label>
+      <select id="novaObraTipo" style="width:100%;">
+        <option value="construcao">🏗️ Nova Construção</option>
+        <option value="reforma">🔧 Reforma</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Edificação (bairro / código)</label>
+      <select id="novaObraEdif" style="width:100%;" onchange="preencherDadosEdif(this.value)">
+        <option value="">— Selecione ou preencha manualmente —</option>
+        <optgroup label="Simões Filho">
+          <option value="CIA|BR 040281|Simões Filho">CIA — BR 040281</option>
+          <option value="Coroa da Lagoa|BR 04 0767|Simões Filho">Coroa da Lagoa — BR 04 0767</option>
+          <option value="Covel|BR 04 2566|Simões Filho">Covel — BR 04 2566</option>
+          <option value="Ilha de São João|BR 04 0934|Simões Filho">Ilha de São João — BR 04 0934</option>
+          <option value="Luiz Eduardo|BR 04 0533|Simões Filho">Luiz Eduardo — BR 04 0533</option>
+          <option value="Mapele|BR 04 1760|Simões Filho">Mapele — BR 04 1760</option>
+          <option value="Nova Pitanguinha|BR 04 0480|Simões Filho">Nova Pitanguinha — BR 04 0480</option>
+          <option value="Palmares|BR 04 1732|Simões Filho">Palmares — BR 04 1732</option>
+          <option value="Ponto Parada|BR 04 2372|Simões Filho">Ponto Parada — BR 04 2372</option>
+          <option value="Santo Antônio Rios das Pedras|BR 04 1613|Simões Filho">Santo Antônio Rios das Pedras — BR 04 1613</option>
+          <option value="Simões Filho 1|BR 04 2139|Simões Filho">Simões Filho 1 — BR 04 2139</option>
+        </optgroup>
+        <optgroup label="Lauro de Freitas">
+          <option value="Areia Branca|BR 04 1466|Lauro de Freitas">Areia Branca — BR 04 1466</option>
+          <option value="Caic|BR 04 1599|Lauro de Freitas">Caic — BR 04 1599</option>
+          <option value="Itinga|BR 04 0475|Lauro de Freitas">Itinga — BR 04 0475</option>
+          <option value="Pq São Paulo|BR 04 1176|Lauro de Freitas">Pq São Paulo — BR 04 1176</option>
+          <option value="Portão|BR 04 1103|Lauro de Freitas">Portão — BR 04 1103</option>
+          <option value="Praia de Ipitanga|BR 04 1055|Lauro de Freitas">Praia de Ipitanga — BR 04 1055</option>
+          <option value="Vida Nova|BR 04 1806|Lauro de Freitas">Vida Nova — BR 04 1806</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Localização (preenchido automaticamente)</label>
+      <input id="novaObraLocal" type="text" placeholder="Ex: Simões Filho / BA" style="width:100%;">
+    </div>
+    <div class="form-group">
+      <label>Data de Início</label>
+      <input id="novaObraInicio" type="date" style="width:100%;">
+    </div>
+    <div class="form-group">
+      <label>Situação ao cadastrar</label>
+      <select id="novaObraSituacao" onchange="toggleSituacaoObraFields(this.value)" style="width:100%;">
+        <option value="nova">📋 Obra nova — ainda não iniciada</option>
+        <option value="andamento">⚡ Já em andamento — obra iniciada sem cadastro prévio</option>
+      </select>
+    </div>
+    <!-- campos extras para obra em andamento -->
+    <div id="camposAndamento" style="display:none;">
+      <div class="form-group">
+        <label>Avanço físico atual estimado: <strong id="avancoPctLabel">70%</strong></label>
+        <input type="range" id="novaObraAvanco" min="0" max="100" step="5" value="70"
+          oninput="document.getElementById('avancoPctLabel').textContent=this.value+'%'"
+          style="width:100%;accent-color:var(--blue);margin-top:6px;">
+        <small style="color:var(--muted);font-size:11px;">Estimativa do que já foi executado até hoje</small>
+      </div>
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+          <input type="checkbox" id="novaObraSemOrc" style="width:auto;margin:0;">
+          <span>Obra sem orçamento formal (reforma emergencial)</span>
+        </label>
+      </div>
+      <div class="form-group">
+        <label>O que já foi feito / situação atual</label>
+        <textarea id="novaObraObs" rows="3"
+          placeholder="Ex: Cobertura substituída, alvenaria concluída, elétrica e acabamentos pendentes..."
+          style="width:100%;font-size:13px;"></textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
+      <button class="btn-outline" onclick="fecharModalNovaObra()">Cancelar</button>
+      <button class="btn-primary" onclick="salvarNovaObra()">Criar Obra</button>
+    </div>
+  </div>
+</div>
+
+<footer>GeoSistema PRO &nbsp;·&nbsp; Dashboard de Obras v3.0 &nbsp;·&nbsp; Simões Filho – BA &nbsp;·&nbsp; <span id="footerSync">Última sync: —</span></footer>
+
+<!-- ════ MODAL ATUALIZAR PROGRESSO ════ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3>Atualizar Progresso da Fase</h3>
+    <div class="form-group">
+      <label>Fase</label>
+      <select id="modalFase">
+        <option value="0">Procedimento Administrativo</option>
+        <option value="1">Terreno</option>
+        <option value="2">Projeto</option>
+        <option value="3">Infraestrutura</option>
+        <option value="4">Superestrutura</option>
+        <option value="5">Alvenaria</option>
+        <option value="6">Pisos</option>
+        <option value="7">Elétrica</option>
+        <option value="8">Hidráulica</option>
+        <option value="9">Cobertura</option>
+        <option value="10">Revestimentos</option>
+        <option value="11">Pintura</option>
+        <option value="12">Acabamentos</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Percentual Concluído: <strong id="pctLabel">50%</strong></label>
+      <input type="range" id="modalPct" min="0" max="100" value="50" oninput="document.getElementById('pctLabel').textContent=this.value+'%'">
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select id="modalStatus">
+        <option value="pending">Pendente</option>
+        <option value="progress">Em andamento</option>
+        <option value="done">Concluído</option>
+        <option value="blocked">Bloqueado</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Observação</label>
+      <textarea id="modalObs" rows="3" placeholder="Ex: Aguardando entrega de material..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-modal-save" onclick="salvarProgresso()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ MODAL NOVA APROVAÇÃO ════ -->
+<div class="modal-overlay" id="modalAprovOverlay">
+  <div class="modal">
+    <h3>Nova Solicitação de Aprovação</h3>
+    <div class="form-group">
+      <label>Tipo de Solicitação</label>
+      <select id="apTipo">
+        <option value="Liberação de Serviço">Liberação de Serviço</option>
+        <option value="Deliberação Administrativa">Deliberação Administrativa</option>
+        <option value="Liberação de Pagamento">Liberação de Pagamento</option>
+        <option value="Mudança de Escopo">Mudança de Escopo</option>
+        <option value="Autorização de Compra">Autorização de Compra</option>
+        <option value="Paralisação Autorizada">Paralisação Autorizada</option>
+        <option value="Retomada de Serviço">Retomada de Serviço</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Fase / Atividade Relacionada</label>
+      <input type="text" id="apFase" placeholder="Ex: Infraestrutura – Concretagem">
+    </div>
+    <div class="form-group">
+      <label>Responsável pela Solicitação</label>
+      <input type="text" id="apResp" placeholder="Nome do solicitante">
+    </div>
+    <div class="form-group">
+      <label>Descrição Detalhada</label>
+      <textarea id="apDesc" rows="4" placeholder="Descreva o que precisa ser aprovado..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Prioridade</label>
+      <select id="apPrio">
+        <option value="Normal">Normal</option>
+        <option value="Alta">Alta</option>
+        <option value="Urgente">Urgente</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeModalAprov()">Cancelar</button>
+      <button class="btn-modal-save" onclick="salvarAprovacao()">📨 Enviar Solicitação</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ MODAL DECISÃO GESTOR ════ -->
+<div class="modal-overlay" id="modalDecisaoOverlay">
+  <div class="modal">
+    <h3 id="decisaoTitle">Tomar Decisão</h3>
+    <p id="decisaoDesc" style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6;"></p>
+    <div class="form-group">
+      <label>Observação do Gestor</label>
+      <textarea id="obsAprov" rows="3" placeholder="Motivo da aprovação ou rejeição..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeModalDecisao()">Cancelar</button>
+      <button class="btn-danger" onclick="decidirAprovacao('rejeitado')">❌ Rejeitar</button>
+      <button class="btn-success" onclick="decidirAprovacao('aprovado')">✅ Aprovar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   DADOS BASE (cronograma)
+═══════════════════════════════════════════════════════ */
+const FASES = [
+  { nome: 'Proc. Administrativo', tag: 'tag-proc',    cor: 'fill-blue',   duracao: 0,  inicio: '30 Out', termino: '30 Out', pct: 100, status: 'done' },
+  { nome: 'Terreno',              tag: 'tag-terreno', cor: 'fill-amber',  duracao: 7,  inicio: '30 Out', termino: '07 Nov', pct: 100, status: 'done' },
+  { nome: 'Projeto',              tag: 'tag-projeto', cor: 'fill-blue',   duracao: 20, inicio: '30 Out', termino: '24 Nov', pct: 55,  status: 'progress' },
+  { nome: 'Infraestrutura',       tag: 'tag-infra',   cor: 'fill-blue',   duracao: 21, inicio: '30 Out', termino: '27 Nov', pct: 40,  status: 'progress' },
+  { nome: 'Superestrutura',       tag: 'tag-super',   cor: 'fill-green',  duracao: 21, inicio: '30 Out', termino: '27 Nov', pct: 30,  status: 'progress' },
+  { nome: 'Alvenaria',            tag: 'tag-alv',     cor: 'fill-blue',   duracao: 10, inicio: '30 Out', termino: '10 Nov', pct: 20,  status: 'progress' },
+  { nome: 'Pisos',                tag: 'tag-piso',    cor: 'fill-amber',  duracao: 6,  inicio: '30 Out', termino: '06 Nov', pct: 0,   status: 'pending' },
+  { nome: 'Elétrica',             tag: 'tag-elet',    cor: 'fill-red',    duracao: 20, inicio: '30 Out', termino: '24 Nov', pct: 0,   status: 'pending' },
+  { nome: 'Hidráulica',           tag: 'tag-hidro',   cor: 'fill-blue',   duracao: 30, inicio: '30 Out', termino: '08 Dez', pct: 0,   status: 'pending' },
+  { nome: 'Cobertura',            tag: 'tag-cob',     cor: 'fill-blue',   duracao: 15, inicio: '30 Out', termino: '17 Nov', pct: 0,   status: 'pending' },
+  { nome: 'Revestimentos',        tag: 'tag-rev',     cor: 'fill-purple', duracao: 21, inicio: '30 Out', termino: '27 Nov', pct: 0,   status: 'pending' },
+  { nome: 'Pintura',              tag: 'tag-pint',    cor: 'fill-amber',  duracao: 8,  inicio: '30 Out', termino: '08 Nov', pct: 0,   status: 'pending' },
+  { nome: 'Acabamentos',          tag: 'tag-acab',    cor: 'fill-green',  duracao: 30, inicio: '30 Out', termino: '08 Dez', pct: 0,   status: 'pending' },
+];
+
+const ATIVIDADES = [
+  { id:'—',     fase:0, nome:'Procedimento Administrativo',                                   dur:0,  ini:'30 Out', fim:'30 Out' },
+  { id:'AT1',   fase:1, nome:'Solicitação de Vistoria de Imóvel – Setor',                     dur:5,  ini:'30 Out', fim:'03 Nov' },
+  { id:'AT11',  fase:1, nome:'Compra',                                                         dur:7,  ini:'30 Out', fim:'07 Nov' },
+  { id:'AT21',  fase:1, nome:'Documentação',                                                   dur:7,  ini:'30 Out', fim:'07 Nov' },
+  { id:'AT31',  fase:1, nome:'Realização de Vistoria e Relatório',                             dur:2,  ini:'30 Out', fim:'31 Out' },
+  { id:'AT41',  fase:1, nome:'Topografia',                                                     dur:4,  ini:'30 Out', fim:'02 Nov' },
+  { id:'AT51',  fase:1, nome:'Terraplanagem',                                                  dur:7,  ini:'30 Out', fim:'07 Nov' },
+  { id:'AT61',  fase:1, nome:'Muro de divisa',                                                 dur:6,  ini:'30 Out', fim:'06 Nov' },
+  { id:'AT71',  fase:1, nome:'Deliberação do Setor',                                           dur:4,  ini:'30 Out', fim:'02 Nov' },
+  { id:'AT81',  fase:1, nome:'Deliberação da ADM GERAL',                                       dur:4,  ini:'30 Out', fim:'02 Nov' },
+  { id:'AT91',  fase:2, nome:'AnteProjeto',                                                    dur:4,  ini:'30 Out', fim:'02 Nov' },
+  { id:'AT101', fase:2, nome:'Projeto executivo',                                              dur:6,  ini:'30 Out', fim:'06 Nov' },
+  { id:'AT111', fase:2, nome:'Apresentação do Projeto à Irmandade',                            dur:1,  ini:'30 Out', fim:'30 Out' },
+  { id:'AT121', fase:2, nome:'Entrega de documentação na SEDUR',                               dur:2,  ini:'30 Out', fim:'31 Out' },
+  { id:'AT131', fase:2, nome:'Aguardar Parecer',                                               dur:15, ini:'30 Out', fim:'17 Nov' },
+  { id:'AT141', fase:2, nome:'Ajuste de Projeto',                                              dur:15, ini:'30 Out', fim:'17 Nov' },
+  { id:'AT151', fase:2, nome:'Aguardar emissão de Alvará',                                     dur:20, ini:'30 Out', fim:'24 Nov' },
+  { id:'AT161', fase:2, nome:'Iniciar Treinamento de integração',                              dur:4,  ini:'30 Out', fim:'02 Nov' },
+  { id:'AT171', fase:2, nome:'Elaboração do Mapa de Risco',                                    dur:4,  ini:'30 Out', fim:'02 Nov' },
+  { id:'AT181', fase:3, nome:'Gabarito e Marcação de Nova Alvenaria',                          dur:4,  ini:'30 Out', fim:'02 Nov' },
+  { id:'AT191', fase:3, nome:'Corte e Montagem das Ferragens',                                 dur:15, ini:'30 Out', fim:'17 Nov' },
+  { id:'AT201', fase:3, nome:'Formas',                                                         dur:10, ini:'30 Out', fim:'10 Nov' },
+  { id:'AT211', fase:3, nome:'Concretagem',                                                    dur:1,  ini:'30 Out', fim:'30 Out' },
+  { id:'AT221', fase:3, nome:'Desforma',                                                       dur:21, ini:'30 Out', fim:'27 Nov' },
+  { id:'AT231', fase:3, nome:'Impermeabilização Baldrame',                                     dur:6,  ini:'30 Out', fim:'06 Nov' },
+  { id:'AT241', fase:3, nome:'Muros de Divisa',                                                dur:8,  ini:'30 Out', fim:'08 Nov' },
+  { id:'AT251', fase:4, nome:'Mobilização interna',                                            dur:5,  ini:'30 Out', fim:'03 Nov' },
+  { id:'AT261', fase:4, nome:'Preparar barreira linha de vida na Laje',                        dur:5,  ini:'30 Out', fim:'03 Nov' },
+  { id:'AT271', fase:4, nome:'Preparar Ferragem dos Pilares – SPDA',                           dur:10, ini:'30 Out', fim:'10 Nov' },
+  { id:'AT281', fase:4, nome:'Preparar Formas dos Pilares',                                    dur:10, ini:'30 Out', fim:'10 Nov' },
+  { id:'AT291', fase:4, nome:'Concretar Pilares',                                              dur:2,  ini:'30 Out', fim:'31 Out' },
+  { id:'AT301', fase:4, nome:'Desforma de Pilares',                                            dur:21, ini:'30 Out', fim:'27 Nov' },
+  { id:'AT311', fase:4, nome:'Armação Vigas Superiores',                                       dur:10, ini:'30 Out', fim:'10 Nov' },
+  { id:'AT321', fase:4, nome:'Forma Vigas Superiores',                                         dur:10, ini:'30 Out', fim:'10 Nov' },
+  { id:'AT331', fase:4, nome:'Concretagem Vigas Superiores',                                   dur:5,  ini:'30 Out', fim:'03 Nov' },
+  { id:'AT341', fase:4, nome:'Desforma Vigas',                                                 dur:21, ini:'30 Out', fim:'27 Nov' },
+  { id:'AT351', fase:5, nome:'Alvenaria interna',                                              dur:10, ini:'30 Out', fim:'10 Nov' },
+  { id:'AT361', fase:5, nome:'Alvenaria externa',                                              dur:10, ini:'30 Out', fim:'10 Nov' },
+  { id:'AT371', fase:5, nome:'Emboço e reboco de alvenaria interna',                           dur:10, ini:'30 Out', fim:'10 Nov' },
+  { id:'AT381', fase:5, nome:'Emboço e reboco de alvenaria externa',                           dur:10, ini:'30 Out', fim:'10 Nov' },
+  { id:'AT391', fase:5, nome:'Finalização dos serviços de reboco',                             dur:10, ini:'30 Out', fim:'10 Nov' },
+  { id:'AT401', fase:6, nome:'Contrapiso interno',                                             dur:6,  ini:'30 Out', fim:'06 Nov' },
+  { id:'AT411', fase:6, nome:'Contrapiso externo',                                             dur:6,  ini:'30 Out', fim:'06 Nov' },
+  { id:'AT421', fase:6, nome:'Jardinagem e piso intertravado',                                 dur:6,  ini:'30 Out', fim:'06 Nov' },
+  { id:'AT431', fase:7, nome:'Compra dos materiais de elétrica',                               dur:15, ini:'30 Out', fim:'17 Nov' },
+  { id:'AT441', fase:7, nome:'Iniciar equipe de Eletricista',                                  dur:1,  ini:'30 Out', fim:'30 Out' },
+  { id:'AT451', fase:7, nome:'Passagem dos cabos interno',                                     dur:15, ini:'30 Out', fim:'17 Nov' },
+  { id:'AT461', fase:7, nome:'Instalação dos espelhos e tomadas',                              dur:1,  ini:'30 Out', fim:'30 Out' },
+  { id:'AT471', fase:7, nome:'Instalação do QG de Forças',                                     dur:20, ini:'30 Out', fim:'24 Nov' },
+  { id:'AT481', fase:7, nome:'Passagem dos cabos externos',                                    dur:5,  ini:'30 Out', fim:'03 Nov' },
+  { id:'AT491', fase:7, nome:'Instalação de Luminárias',                                       dur:15, ini:'30 Out', fim:'17 Nov' },
+  { id:'AT501', fase:8, nome:'Compra de materiais',                                            dur:20, ini:'30 Out', fim:'24 Nov' },
+  { id:'AT511', fase:8, nome:'Iniciar equipe de hidráulica',                                   dur:1,  ini:'30 Out', fim:'30 Out' },
+  { id:'AT521', fase:8, nome:'Passagem de tubulação externa',                                  dur:10, ini:'30 Out', fim:'10 Nov' },
+  { id:'AT531', fase:8, nome:'Passagem de tubulação interna',                                  dur:10, ini:'30 Out', fim:'10 Nov' },
+  { id:'AT541', fase:8, nome:'Caixas de passagens',                                            dur:15, ini:'30 Out', fim:'17 Nov' },
+  { id:'AT551', fase:8, nome:'Instalação de peças',                                            dur:30, ini:'30 Out', fim:'08 Dez' },
+  { id:'AT561', fase:9, nome:'Reparo ou substituição de estrutura',                            dur:15, ini:'30 Out', fim:'17 Nov' },
+  { id:'AT571', fase:9, nome:'Implantação de Calhas',                                          dur:10, ini:'30 Out', fim:'10 Nov' },
+  { id:'AT581', fase:9, nome:'Compra de Forro',                                                dur:5,  ini:'30 Out', fim:'03 Nov' },
+  { id:'AT591', fase:9, nome:'Instalação de Forro 1',                                          dur:8,  ini:'30 Out', fim:'08 Nov' },
+  { id:'AT601', fase:9, nome:'Instalação de Forro 2',                                          dur:4,  ini:'30 Out', fim:'02 Nov' },
+  { id:'AT611', fase:9, nome:'Instalação de pastilhas em fachada',                             dur:15, ini:'30 Out', fim:'17 Nov' },
+  { id:'AT621', fase:10, nome:'Compra dos Revestimentos',                                      dur:5,  ini:'30 Out', fim:'03 Nov' },
+  { id:'AT631', fase:10, nome:'Instalação dos revestimentos dos banheiros',                    dur:15, ini:'30 Out', fim:'17 Nov' },
+  { id:'AT641', fase:10, nome:'Instalação dos revestimentos da Nave',                          dur:12, ini:'30 Out', fim:'14 Nov' },
+  { id:'AT651', fase:10, nome:'Instalação dos revestimentos externos',                         dur:21, ini:'30 Out', fim:'27 Nov' },
+  { id:'AT661', fase:11, nome:'Compra de Materiais de Pintura',                                dur:5,  ini:'30 Out', fim:'03 Nov' },
+  { id:'AT671', fase:11, nome:'Emassamento de paredes internas',                               dur:5,  ini:'30 Out', fim:'03 Nov' },
+  { id:'AT681', fase:11, nome:'Emassamento de paredes externas',                               dur:5,  ini:'30 Out', fim:'03 Nov' },
+  { id:'AT691', fase:11, nome:'Pintura interna',                                               dur:8,  ini:'30 Out', fim:'08 Nov' },
+  { id:'AT701', fase:11, nome:'Pintura externa',                                               dur:8,  ini:'30 Out', fim:'08 Nov' },
+  { id:'AT711', fase:11, nome:'Pintura de sinalização e segurança',                            dur:5,  ini:'30 Out', fim:'03 Nov' },
+  { id:'AT721', fase:12, nome:'Instalação de portas e batentes',                               dur:25, ini:'30 Out', fim:'01 Dez' },
+  { id:'AT731', fase:12, nome:'Cotação e compra de Esquadrias',                                dur:4,  ini:'30 Out', fim:'02 Nov' },
+  { id:'AT741', fase:12, nome:'Instalação de Esquadrias',                                      dur:8,  ini:'30 Out', fim:'08 Nov' },
+  { id:'AT751', fase:12, nome:'Instalação de peças sanitárias',                                dur:8,  ini:'30 Out', fim:'08 Nov' },
+  { id:'AT761', fase:12, nome:'Cotação e compra de Ar condicionado',                           dur:4,  ini:'30 Out', fim:'02 Nov' },
+  { id:'AT771', fase:12, nome:'Instalação de Ar condicionado',                                 dur:8,  ini:'30 Out', fim:'08 Nov' },
+  { id:'AT781', fase:12, nome:'Entrada no AVCB',                                               dur:1,  ini:'30 Out', fim:'30 Out' },
+  { id:'AT791', fase:12, nome:'Aguardo do retorno do AVCB',                                    dur:30, ini:'30 Out', fim:'08 Dez' },
+  { id:'AT801', fase:12, nome:'Entrada em Habite-se',                                          dur:1,  ini:'30 Out', fim:'30 Out' },
+  { id:'AT811', fase:12, nome:'Aguardo de retorno do Habite-se',                               dur:30, ini:'30 Out', fim:'08 Dez' },
+  { id:'AT821', fase:12, nome:'Ajustes Finais de Obra',                                        dur:10, ini:'30 Out', fim:'10 Nov' },
+];
+
+ATIVIDADES.forEach(a => {
+  const f = FASES[a.fase];
+  a.status = f.status;
+  a.pct    = f.pct;
+});
+
+/* ═══════════════════════════════════════════════════════
+   localStorage — chaves do Diário v2
+   geo_atividades_pct  → { [id]: number }
+   geo_avanco_fisico   → number (%)
+   geo_diarios         → [ { data, obra, responsavel, turno, atividades:[], observacoes, assinatura, timestamp } ]
+   geo_incidentes      → [ { tipo, gravidade, ferramenta, descricao, data, hora, diarioId } ]
+   geo_aprovacoes      → [ { id, tipo, fase, responsavel, desc, prioridade, status, obsGestor, criadoEm, decididoEm } ]
+═══════════════════════════════════════════════════════ */
+
+const LS = {
+  get: (k, fallback=null) => {
+    try {
+      const v = localStorage.getItem(k);
+      return v !== null ? JSON.parse(v) : fallback;
+    } catch { return fallback; }
+  },
+  set: (k, v) => {
+    try { localStorage.setItem(k, JSON.stringify(v)); return true; }
+    catch { return false; }
+  }
+};
+
+/* Ícones por tipo de incidente */
+const INC_ICONS = {
+  'Acidente com Afastamento': '🏥',
+  'Acidente sem Afastamento': '🩹',
+  'Quase Acidente': '⚡',
+  'Dano a Equipamento': '🔧',
+  'Paralisação de Serviço': '⏸️',
+  'Problema Ambiental': '🌿',
+  'Notificação / Autuação': '📋',
+  'Ocorrência de Segurança': '🛡️',
+};
+
+/* ═══════════════════════════════════════════════════════
+   SYNC — lê localStorage e atualiza toda a tela
+═══════════════════════════════════════════════════════ */
+function syncLocalStorage() {
+  // 1. Avanço por atividade
+  const pctMap = LS.get('geo_atividades_pct', {});
+  ATIVIDADES.forEach(a => {
+    if (pctMap[a.id] !== undefined) {
+      a.pct = pctMap[a.id];
+      a.status = a.pct >= 100 ? 'done' : a.pct > 0 ? 'progress' : 'pending';
+    }
+  });
+  // Recalcula % por fase a partir das atividades
+  FASES.forEach((f, idx) => {
+    const ativsDaFase = ATIVIDADES.filter(a => a.fase === idx);
+    if (ativsDaFase.length > 0) {
+      const media = ativsDaFase.reduce((s, a) => s + a.pct, 0) / ativsDaFase.length;
+      f.pct = Math.round(media);
+      f.status = f.pct >= 100 ? 'done' : f.pct > 0 ? 'progress' : 'pending';
+    }
+  });
+
+  // 2. Render principal
+  renderProgressFases();
+  renderCronograma();
+  renderKPIs();
+  renderIncidentesRecentes();
+  renderDiariosRecentes();
+  renderIncidentesCompleto();
+  renderDiariosCompleto();
+  renderAprovacoes();
+  updateChips();
+
+  // Footer timestamp
+  const now = new Date();
+  document.getElementById('footerSync').textContent =
+    'Última sync: ' + now.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+}
+
+/* ═══════════════════════════════════════════════════════
+   KPIs
+═══════════════════════════════════════════════════════ */
+function renderKPIs() {
+  const concluidas = FASES.filter(f => f.status === 'done').length;
+  const andamento  = FASES.filter(f => f.status === 'progress').length;
+  const pendentes  = FASES.filter(f => f.status === 'pending' || f.status === 'blocked').length;
+  const total      = ATIVIDADES.length;
+
+  document.getElementById('kpiTotal').textContent      = total;
+  document.getElementById('kpiConcluidas').textContent = concluidas;
+  document.getElementById('kpiAndamento').textContent  = andamento;
+  document.getElementById('kpiPendentes').textContent  = pendentes;
+  document.getElementById('kpiPctConcluidas').textContent = '+' + Math.round(concluidas / FASES.length * 100) + '%';
+  document.getElementById('kpiPctPend').textContent = Math.round(pendentes / FASES.length * 100) + '% restante';
+
+  const diarios   = LS.get('geo_diarios', []);
+  const incidentes = LS.get('geo_incidentes', []);
+  const avFisico  = LS.get('geo_avanco_fisico', 0);
+
+  document.getElementById('kpiDiarios').textContent   = diarios.length;
+  document.getElementById('kpiIncidentes').textContent = incidentes.length;
+  document.getElementById('kpiAvFisico').textContent  = 'Avanço: ' + avFisico + '%';
+}
+
+/* ── MAPA DE GRAVIDADE ─────────────────────────────────────────────
+   Mapeamento usado por incidenteHTML() para exibir badge de gravidade
+   Compatível com dados gerados pelo Diário de Obra v2 mobile
+─────────────────────────────────────────────────────────────────── */
+const GRAV_MAP = {
+  leve:     { label: 'Leve',    nivel: 1 },
+  moderado: { label: 'Médio',   nivel: 2 },
+  grave:    { label: 'Grave',   nivel: 3 },
+  critico:  { label: 'Crítico', nivel: 4 },
+};
+/* ═══════════════════════════════════════════════════════
+   CHIPS (contadores nas abas)
+═══════════════════════════════════════════════════════ */
+function updateChips() {
+  const diarios    = LS.get('geo_diarios', []);
+  const incidentes = LS.get('geo_incidentes', []);
+  const aprovacoes = LS.get('geo_aprovacoes', []);
+
+  document.getElementById('chipDiarios').textContent    = diarios.length;
+  document.getElementById('chipIncidentes').textContent = incidentes.length;
+  document.getElementById('chipAprov').textContent      = aprovacoes.filter(a => a.status === 'pendente').length;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PROGRESSO POR FASE
+═══════════════════════════════════════════════════════ */
+function renderProgressFases() {
+  const c = document.getElementById('progressFases');
+  c.innerHTML = FASES.map(f => `
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span class="name">${f.nome}</span>
+        <span class="pct">${f.pct}%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill ${f.cor}" style="width:${f.pct}%"></div>
+      </div>
+    </div>
+  `).join('');
+
+  const total = Math.round(FASES.reduce((s, f) => s + f.pct, 0) / FASES.length);
+  document.getElementById('totalPct').textContent = total + '% geral';
+}
+
+/* ═══════════════════════════════════════════════════════
+   CRONOGRAMA
+═══════════════════════════════════════════════════════ */
+function renderCronograma(filtro = '') {
+  const tbody = document.getElementById('tbodyCronograma');
+  const rows  = ATIVIDADES.filter(a =>
+    a.nome.toLowerCase().includes(filtro.toLowerCase()) ||
+    a.id.toLowerCase().includes(filtro.toLowerCase())
+  );
+  const statusMap = {
+    done:     ['dot-done',     'Concluído'],
+    progress: ['dot-progress', 'Em andamento'],
+    pending:  ['dot-pending',  'Pendente'],
+    blocked:  ['dot-blocked',  'Bloqueado'],
+  };
+  tbody.innerHTML = rows.map(a => {
+    const [dotClass, label] = statusMap[a.status] || ['dot-pending', 'Pendente'];
+    const fase = FASES[a.fase];
+    return `<tr>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">${a.id}</td>
+      <td><span class="fase-tag ${fase.tag}">${fase.nome}</span></td>
+      <td>${a.nome}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--muted);">${a.dur}d</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;">${a.ini}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;">${a.fim}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div class="mini-bar"><div class="mini-fill ${fase.cor}" style="width:${a.pct}%"></div></div>
+          <span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);">${a.pct}%</span>
+        </div>
+      </td>
+      <td><span class="status-dot ${dotClass}"></span>${label}</td>
+    </tr>`;
+  }).join('');
+}
+
+document.getElementById('searchAtiv').addEventListener('input', function () {
+  renderCronograma(this.value);
+});
+
+/* ═══════════════════════════════════════════════════════
+   INCIDENTES
+═══════════════════════════════════════════════════════ */
+function incidenteHTML(inc) {
+  const icon     = INC_ICONS[inc.tipo] || '⚠️';
+  const gravClass = 'inc-' + (inc.gravidade || 'Leve').replace('é','e').replace('í','i');
+  return `
+    <div class="incident-item">
+      <div class="incident-icon ${gravClass}">${icon}</div>
+      <div class="incident-body">
+        <div style="display:flex;align-items:flex-start;gap:8px;justify-content:space-between;flex-wrap:wrap;">
+          <div class="incident-title">${inc.tipo || '—'}</div>
+          <span class="grav-badge grav-${inc.gravidade || 'Leve'}">${inc.gravidade || 'Leve'}</span>
+        </div>
+        <div class="incident-meta">${inc.data || '—'} ${inc.hora ? '· ' + inc.hora : ''} ${inc.ferramenta ? '· 🔧 ' + inc.ferramenta : ''}</div>
+        ${inc.descricao ? `<div class="incident-desc">${inc.descricao}</div>` : ''}
+      </div>
+    </div>`;
+}
+
+function renderIncidentesRecentes() {
+  const incidentes = LS.get('geo_incidentes', []);
+  const el = document.getElementById('incidentesRecentes');
+  if (!incidentes.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">🟢</div><p>Nenhum incidente registrado</p><small>Os dados vêm do Diário de Obra v2</small></div>`;
+    return;
+  }
+  const ultimos = [...incidentes].reverse().slice(0, 5);
+  el.innerHTML = ultimos.map(incidenteHTML).join('');
+}
+
+function renderIncidentesCompleto() {
+  const incidentes = LS.get('geo_incidentes', []);
+  const filtro     = document.getElementById('filtroGrav').value;
+  const filtrados  = filtro ? incidentes.filter(i => i.gravidade === filtro) : incidentes;
+
+  // KPIs
+  ['Leve','Médio','Grave','Crítico'].forEach(g => {
+    const key = 'incKpi' + g.replace('é','e').replace('í','i');
+    const el  = document.getElementById(key);
+    if (el) el.textContent = incidentes.filter(i => i.gravidade === g).length;
+  });
+  document.getElementById('incTotal').textContent = filtrados.length + ' registro(s)';
+
+  const el = document.getElementById('incidentesListaCompleta');
+  if (!filtrados.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">🟢</div><p>Nenhum incidente encontrado</p><small>Ajuste o filtro ou sincronize os dados</small></div>`;
+    return;
+  }
+  el.innerHTML = [...filtrados].reverse().map(incidenteHTML).join('');
+}
+
+/* ═══════════════════════════════════════════════════════
+   DIÁRIOS
+═══════════════════════════════════════════════════════ */
+function diarioHTML(d) {
+  const ativs = Array.isArray(d.atividades) ? d.atividades : [];
+  const tags  = ativs.slice(0, 4).map(a =>
+    `<span class="diario-tag">${typeof a === 'object' ? (a.nome || a.id || '—') : a}</span>`
+  ).join('') + (ativs.length > 4 ? `<span class="diario-tag">+${ativs.length - 4}</span>` : '');
+  return `
+    <div class="diario-item">
+      <div class="diario-header">
+        <div>
+          <div class="diario-obra">${d.obra || 'Obra não informada'}</div>
+          <div class="diario-resp">👤 ${d.responsavel || d.encarregado || '—'} · Turno: ${d.turno || '—'}</div>
+        </div>
+        <div class="diario-date">${d.data || '—'}</div>
+      </div>
+      ${tags ? `<div class="diario-tags">${tags}</div>` : ''}
+      ${d.observacoes ? `<div class="diario-resumo">📝 ${d.observacoes.substring(0,120)}${d.observacoes.length > 120 ? '…' : ''}</div>` : ''}
+    </div>`;
+}
+
+function renderDiariosRecentes() {
+  const diarios = LS.get('geo_diarios', []);
+  const el = document.getElementById('diariosRecentes');
+  if (!diarios.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">📭</div><p>Nenhum diário enviado ainda</p><small>Sincronize com o Diário de Obra v2</small></div>`;
+    return;
+  }
+  el.innerHTML = [...diarios].reverse().slice(0, 3).map(diarioHTML).join('');
+}
+
+function renderDiariosCompleto() {
+  const diarios = LS.get('geo_diarios', []);
+  const el = document.getElementById('diariosListaCompleta');
+  if (!diarios.length) {
+    el.innerHTML = `<div class="empty-state" style="padding:60px 20px;"><div class="icon">📭</div><p>Nenhum diário encontrado</p><small>Envie um diário pelo Diário de Obra v2 e clique em Sincronizar</small></div>`;
+    return;
+  }
+  el.innerHTML = `<div style="display:flex;flex-direction:column;gap:0;">${[...diarios].reverse().map(diarioHTML).join('')}</div>`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   APROVAÇÕES
+═══════════════════════════════════════════════════════ */
+let aprovacaoDecisaoIdx = null;
+
+function renderAprovacoes() {
+  const aprovacoes = LS.get('geo_aprovacoes', []);
+  const filtro     = document.getElementById('filtroAprov').value;
+  const filtradas  = filtro ? aprovacoes.filter(a => a.status === filtro) : aprovacoes;
+
+  // KPIs
+  document.getElementById('aprovKpiPend').textContent = aprovacoes.filter(a => a.status === 'pendente').length;
+  document.getElementById('aprovKpiAprov').textContent = aprovacoes.filter(a => a.status === 'aprovado').length;
+  document.getElementById('aprovKpiRej').textContent   = aprovacoes.filter(a => a.status === 'rejeitado').length;
+
+  const el = document.getElementById('aprovacoesList');
+  if (!filtradas.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>Nenhuma solicitação encontrada</p><small>Clique em "+ Nova Solicitação" para criar</small></div>`;
+    return;
+  }
+
+  const prioMap = { 'Urgente': '🚨', 'Alta': '🔴', 'Normal': '🟡' };
+  el.innerHTML = [...filtradas].reverse().map((a, i) => {
+    const realIdx = aprovacoes.length - 1 - i; // índice real no array
+    const actualIdx = aprovacoes.indexOf(a);
+    return `
+    <div class="aprov-item ${a.status}">
+      <div class="aprov-header">
+        <div>
+          <div class="aprov-title">${prioMap[a.prioridade] || '🟡'} ${a.tipo}</div>
+          <div class="aprov-meta">${a.criadoEm || '—'} · ${a.fase || 'Fase não informada'}</div>
+        </div>
+        <span class="aprov-status st-${a.status}">
+          ${a.status === 'pendente' ? '⏳ Pendente' : a.status === 'aprovado' ? '✅ Aprovado' : '❌ Rejeitado'}
+        </span>
+      </div>
+      ${a.responsavel ? `<div class="aprov-meta" style="margin-top:5px;">👤 ${a.responsavel}</div>` : ''}
+      ${a.desc ? `<div class="aprov-desc">${a.desc}</div>` : ''}
+      ${a.obsGestor ? `<div class="aprov-desc" style="color:var(--teal);margin-top:4px;">💬 Gestor: ${a.obsGestor}</div>` : ''}
+      ${a.status === 'pendente' ? `
+      <div class="aprov-actions">
+        <button class="btn-danger" onclick="abrirDecisao(${actualIdx})">✏️ Decidir</button>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function abrirDecisao(idx) {
+  const aprovacoes = LS.get('geo_aprovacoes', []);
+  const a = aprovacoes[idx];
+  if (!a) return;
+  aprovacaoDecisaoIdx = idx;
+  document.getElementById('decisaoTitle').textContent = a.tipo;
+  document.getElementById('decisaoDesc').textContent  = a.desc || '';
+  document.getElementById('obsAprov').value = '';
+  document.getElementById('modalDecisaoOverlay').classList.add('open');
+}
+
+function decidirAprovacao(decisao) {
+  const aprovacoes = LS.get('geo_aprovacoes', []);
+  if (aprovacaoDecisaoIdx === null || !aprovacoes[aprovacaoDecisaoIdx]) return;
+  aprovacoes[aprovacaoDecisaoIdx].status      = decisao;
+  aprovacoes[aprovacaoDecisaoIdx].obsGestor   = document.getElementById('obsAprov').value;
+  aprovacoes[aprovacaoDecisaoIdx].decididoEm  = new Date().toLocaleString('pt-BR');
+  LS.set('geo_aprovacoes', aprovacoes);
+  closeModalDecisao();
+  renderAprovacoes();
+  updateChips();
+}
+
+function closeModalDecisao() {
+  document.getElementById('modalDecisaoOverlay').classList.remove('open');
+  aprovacaoDecisaoIdx = null;
+}
+
+/* ═══════════════════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════════════════ */
+function showTab(id, btn) {
+  const tabs = ['dashboard', 'cronograma', 'diarios', 'incidentes', 'aprovacoes', 'vistoria', 'escopo', 'galeria'];
+  tabs.forEach(t => {
+    const el = document.getElementById('tab-' + t);
+    if (el) el.style.display = t === id ? '' : 'none';
+  });
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  // Ao entrar na aba Escopo, exibe alerta se obra em andamento
+  if (id === 'escopo') {
+    const obra = getObraAtivaObj();
+    const alerta    = document.getElementById('alertaObraAndamento');
+    const alertaOrc = document.getElementById('alertaSemOrc');
+    if (alerta) alerta.style.display = obra?.situacao === 'andamento' ? 'flex' : 'none';
+    if (alertaOrc) alertaOrc.style.display = obra?.semOrcamento ? 'inline' : 'none';
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   MODAL PROGRESSO
+═══════════════════════════════════════════════════════ */
+function openModal()  { document.getElementById('modalOverlay').classList.add('open'); }
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+
+function salvarProgresso() {
+  const idx    = parseInt(document.getElementById('modalFase').value);
+  const pct    = parseInt(document.getElementById('modalPct').value);
+  const status = document.getElementById('modalStatus').value;
+  FASES[idx].pct    = pct;
+  FASES[idx].status = status;
+  ATIVIDADES.forEach(a => { if (a.fase === idx) { a.pct = pct; a.status = status; } });
+  // Persistir no localStorage para o Dashboard Financeiro ler
+  const pctMap = LS.get('geo_atividades_pct', {});
+  ATIVIDADES.filter(a => a.fase === idx).forEach(a => { pctMap[a.id] = pct; });
+  LS.set('geo_atividades_pct', pctMap);
+  const total = Math.round(FASES.reduce((s, f) => s + f.pct, 0) / FASES.length);
+  LS.set('geo_avanco_fisico', total);
+  renderProgressFases();
+  renderCronograma();
+  renderKPIs();
+  closeModal();
+}
+
+/* ═══════════════════════════════════════════════════════
+   MODAL NOVA APROVAÇÃO
+═══════════════════════════════════════════════════════ */
+function openModalAprov()  { document.getElementById('modalAprovOverlay').classList.add('open'); }
+function closeModalAprov() { document.getElementById('modalAprovOverlay').classList.remove('open'); }
+document.getElementById('modalAprovOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModalAprov(); });
+
+function salvarAprovacao() {
+  const tipo  = document.getElementById('apTipo').value;
+  const fase  = document.getElementById('apFase').value;
+  const resp  = document.getElementById('apResp').value;
+  const desc  = document.getElementById('apDesc').value;
+  const prio  = document.getElementById('apPrio').value;
+  if (!desc.trim()) { alert('Preencha a descrição da solicitação.'); return; }
+  const aprovacoes = LS.get('geo_aprovacoes', []);
+  aprovacoes.push({
+    id: Date.now(),
+    tipo, fase, responsavel: resp, desc, prioridade: prio,
+    status: 'pendente',
+    obsGestor: '',
+    criadoEm: new Date().toLocaleString('pt-BR'),
+    decididoEm: null,
+  });
+  LS.set('geo_aprovacoes', aprovacoes);
+  closeModalAprov();
+  renderAprovacoes();
+  updateChips();
+  // Limpar form
+  ['apFase','apResp','apDesc'].forEach(id => document.getElementById(id).value = '');
+}
+
+/* ═══════════════════════════════════════════════════════
+   TIPO OBRA
+═══════════════════════════════════════════════════════ */
+function setTipo(tipo) {
+  const isCon = tipo === 'construcao';
+  document.getElementById('btnConst').className = 'type-btn ' + (isCon ? 'active-construcao' : '');
+  document.getElementById('btnRef').className   = 'type-btn ' + (!isCon ? 'active-reforma' : '');
+  document.getElementById('tipoLabel').innerHTML = isCon
+    ? '<span class="badge-construcao">Nova Construção</span>'
+    : '<span class="badge-reforma">Reforma</span>';
+  document.getElementById('modeloLabel').textContent = isCon ? 'Nova Construção' : 'Reforma';
+}
+
+/* ═══════════════════════════════════════════════════════
+   EXPORTAR
+═══════════════════════════════════════════════════════ */
+function exportarCronograma() {
+  const blob = new Blob([JSON.stringify({ fases: FASES, atividades: ATIVIDADES }, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Cronograma_LaurodFreitas_Central.json';
+  a.click();
+}
+
+/* ═══════════════════════════════════════════════════════
+   VISTORIA
+═══════════════════════════════════════════════════════ */
+function carregarVistoria(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const dados = JSON.parse(e.target.result);
+      renderVistoria(Array.isArray(dados) ? dados[0] : dados);
+    } catch { alert('❌ Arquivo JSON inválido.'); }
+  };
+  reader.readAsText(file);
+}
+
+function renderVistoria(v) {
+  const urgencia = v.nivelUrgencia || 'Normal';
+  const urgClass = urgencia === 'Urgente' ? 'urg-Urgente' : urgencia === 'Atenção' ? 'urg-Atencao' : 'urg-Normal';
+  const alertas  = (v.apontamento && v.apontamento.includes('Área de risco'))
+    ? `<div class="alert-box alert-red">⚠️ <strong>Área de Risco</strong> identificada nesta edificação.</div>` : '';
+  const depHtml  = v.dependencia && v.dependencia.length
+    ? `<div class="alert-box alert-blue">🏛️ Dependências: ${v.dependencia.join(' · ')}</div>` : '';
+
+  document.getElementById('vistoriaBody').innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:600;">${v.bairro||'—'} &nbsp;·&nbsp; ${v.codigoEdificacao||'—'}</div>
+      <span class="badge-urg ${urgClass}">${urgencia}</span>
+    </div>
+    ${alertas}${depHtml}
+    <div class="v-grid">
+      ${campo('Estrutura', v.tipoEstrutura)}${campo('Piso', v.situacaoPiso)}
+      ${campo('Pintura', v.situacaoPintura)}${campo('Cobertura', v.condicaoCobertura)}
+      ${campo('Acessibilidade', v.acessibilidade)}${campo('Alvará', v.possuiAlvara)}
+      ${campo('AVCB', v.avcb)}${campo('Estacionamento', v.possuiEstacionamento)}
+      ${campo('Zoneamento', v.zoneamento)}${campo('Data', v.data)}
+    </div>
+    ${v.servicoExecutado ? `<div style="margin-top:12px;padding:10px;background:var(--surface2);border-radius:7px;font-size:12px;color:var(--muted);"><strong style="color:var(--text);">Obs:</strong> ${v.servicoExecutado}</div>` : ''}
+    <div style="margin-top:12px;padding:10px 14px;background:rgba(26,115,232,.08);border-radius:8px;border:1px solid rgba(26,115,232,.2);font-size:12px;color:#93c5fd;">
+      💡 <strong>Análise automática:</strong> Modelo de <strong>${urgencia === 'Normal' ? 'Reforma' : 'Nova Construção'}</strong> recomendado.
+    </div>`;
+}
+
+function campo(label, valor) {
+  if (!valor) return '';
+  return `<div class="v-campo"><span class="vlabel">${label}</span><span class="vval">${valor}</span></div>`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ESCOPO PADRÃO — dados de Planilha_de_escopo_padrao_reforma.xlsx
+═══════════════════════════════════════════════════════ */
+const ESCOPO_REFORMA = [
+  { id:'A1000', wbs:'RC-1',    nome:'Inicio do Projeto',                           pct:0 },
+  { id:'A1010', wbs:'RC-1',    nome:'Fim do Projeto',                              pct:0 },
+  { id:'A1020', wbs:'RC-1.1',  nome:'Solicitação de Vistoria de Imóvel - Setor',   pct:0 },
+  { id:'A1030', wbs:'RC-1.1',  nome:'Realização de Vistoria e Relatório',          pct:0 },
+  { id:'A1040', wbs:'RC-1.1',  nome:'Deliberação do Setor',                        pct:0 },
+  { id:'A1050', wbs:'RC-1.1',  nome:'Deliberação da ADM GERAL',                    pct:0 },
+  { id:'A1060', wbs:'RC-1.1',  nome:'Apresentação do Projeto a Irmandade',         pct:0 },
+  { id:'A1070', wbs:'RC-1.1',  nome:'Entrega de documentação na Sedur',            pct:0 },
+  { id:'A1080', wbs:'RC-1.1',  nome:'Aguardar Parecer',                            pct:0 },
+  { id:'A1090', wbs:'RC-1.1',  nome:'Ajuste de Projeto',                           pct:0 },
+  { id:'A1100', wbs:'RC-1.1',  nome:'Aguardar emissão de Alvará',                  pct:0 },
+  { id:'A1110', wbs:'RC-1.1',  nome:'Iniciar Treinamento de integração',           pct:0 },
+  { id:'A1120', wbs:'RC-1.1',  nome:'Elaboração do Mapa de Risco',                 pct:0 },
+  { id:'A1130', wbs:'RC-1.2',  nome:'Demolição cobertura',                         pct:0 },
+  { id:'A1140', wbs:'RC-1.2',  nome:'Demolição Alvenaria',                         pct:0 },
+  { id:'A1150', wbs:'RC-1.2',  nome:'Demolição de revestimento',                   pct:0 },
+  { id:'A1160', wbs:'RC-1.2',  nome:'Demolição de esquadrias',                     pct:0 },
+  { id:'A1170', wbs:'RC-1.2',  nome:'Limpeza de resíduos',                         pct:0 },
+  { id:'A1180', wbs:'RC-1.3',  nome:'Gabarito e Marcação de Nova Alvenaria',       pct:0 },
+  { id:'A1190', wbs:'RC-1.3',  nome:'Corte e Montagem das Ferragens',              pct:0 },
+  { id:'A1200', wbs:'RC-1.3',  nome:'Formas',                                      pct:0 },
+  { id:'A1210', wbs:'RC-1.3',  nome:'Concretagem',                                 pct:0 },
+  { id:'A1220', wbs:'RC-1.3',  nome:'Desforma',                                    pct:0 },
+  { id:'A1230', wbs:'RC-1.3',  nome:'Impermeabilização Baldrame',                  pct:0 },
+  { id:'A1240', wbs:'RC-1.3',  nome:'Muros de Divisa',                             pct:0 },
+  { id:'A1250', wbs:'RC-1.4',  nome:'Mobilização interna',                         pct:0 },
+  { id:'A1260', wbs:'RC-1.4',  nome:'Preparar barreira linha de vida na Laje',     pct:0 },
+  { id:'A1270', wbs:'RC-1.4',  nome:'Preparar Ferragem dos Pilares - SPDA',        pct:0 },
+  { id:'A1280', wbs:'RC-1.4',  nome:'Preparar Formas dos Pilares',                 pct:0 },
+  { id:'A1290', wbs:'RC-1.4',  nome:'Concretar Pilares',                           pct:0 },
+  { id:'A1300', wbs:'RC-1.4',  nome:'Desforma de Pilares',                         pct:0 },
+  { id:'A1310', wbs:'RC-1.4',  nome:'Armação Vigas Superiores',                    pct:0 },
+  { id:'A1320', wbs:'RC-1.4',  nome:'Forma Vigas Superiores',                      pct:0 },
+  { id:'A1330', wbs:'RC-1.4',  nome:'Concretagem Vigas Superiores',                pct:0 },
+  { id:'A1340', wbs:'RC-1.4',  nome:'Desforma Vigas',                              pct:0 },
+  { id:'A1350', wbs:'RC-1.5',  nome:'Alvenaria interna',                           pct:0 },
+  { id:'A1360', wbs:'RC-1.5',  nome:'Alvenaria externa',                           pct:0 },
+  { id:'A1370', wbs:'RC-1.5',  nome:'Emboço e recobo de alvenaria interna',        pct:0 },
+  { id:'A1380', wbs:'RC-1.5',  nome:'Emboço e recobo de alvenaria externa',        pct:0 },
+  { id:'A1390', wbs:'RC-1.5',  nome:'Finalização dos serviços de reboco',          pct:0 },
+  { id:'A1400', wbs:'RC-1.6',  nome:'Contrapiso interno',                          pct:0 },
+  { id:'A1410', wbs:'RC-1.6',  nome:'Contrapiso externo',                          pct:0 },
+  { id:'A1420', wbs:'RC-1.6',  nome:'Jardinagem e piso intertravado',              pct:0 },
+  { id:'A1430', wbs:'RC-1.7',  nome:'Compra dos materiais de eletrica',            pct:0 },
+  { id:'A1440', wbs:'RC-1.7',  nome:'Iniciar equipe de Eletricista',               pct:0 },
+  { id:'A1450', wbs:'RC-1.7',  nome:'Passagem dos cabos interno',                  pct:0 },
+  { id:'A1460', wbs:'RC-1.7',  nome:'Instalação dos espelhos e tomadas',           pct:0 },
+  { id:'A1470', wbs:'RC-1.7',  nome:'Instalação do QG de Forças',                  pct:0 },
+  { id:'A1480', wbs:'RC-1.7',  nome:'Passagem dos cabos externos',                 pct:0 },
+  { id:'A1490', wbs:'RC-1.7',  nome:'Instalação da Luminárias',                    pct:0 },
+  { id:'A1500', wbs:'RC-1.8',  nome:'Compra de materiais',                         pct:0 },
+  { id:'A1510', wbs:'RC-1.8',  nome:'Iniciar equipe de hidráulica',                pct:0 },
+  { id:'A1520', wbs:'RC-1.8',  nome:'Passagem de tubulação externa',               pct:0 },
+  { id:'A1530', wbs:'RC-1.8',  nome:'Passagem de tubulação interna',               pct:0 },
+  { id:'A1540', wbs:'RC-1.8',  nome:'Caixas de passagens',                         pct:0 },
+  { id:'A1550', wbs:'RC-1.8',  nome:'Instalação de peças',                         pct:0 },
+  { id:'A1560', wbs:'RC-1.9',  nome:'Reparo ou substituição de estrutura',         pct:0 },
+  { id:'A1570', wbs:'RC-1.9',  nome:'Implantação de Calhas',                       pct:0 },
+  { id:'A1580', wbs:'RC-1.9',  nome:'Compra de Forro',                             pct:0 },
+  { id:'A1590', wbs:'RC-1.9',  nome:'Instalação de Forro 1',                       pct:0 },
+  { id:'A1600', wbs:'RC-1.9',  nome:'Instalação de Forro 2',                       pct:0 },
+  { id:'A1610', wbs:'RC-1.9',  nome:'Instalação de pastilhas em fachada',          pct:0 },
+  { id:'A1620', wbs:'RC-1.10', nome:'Compra dos Revestimentos',                    pct:0 },
+  { id:'A1630', wbs:'RC-1.10', nome:'Instalação dos revestimentos dos banheiros',  pct:0 },
+  { id:'A1640', wbs:'RC-1.10', nome:'Instalação dos revestimentos da Nave',        pct:0 },
+  { id:'A1650', wbs:'RC-1.10', nome:'Instalação dos revestimentos externos',       pct:0 },
+  { id:'A1660', wbs:'RC-1.11', nome:'Compra de Materiais de Pintura',              pct:0 },
+  { id:'A1670', wbs:'RC-1.11', nome:'Emassamento de paredes internas',             pct:0 },
+  { id:'A1680', wbs:'RC-1.11', nome:'Emassamento de paredes externas',             pct:0 },
+  { id:'A1690', wbs:'RC-1.11', nome:'Pintura interna',                             pct:0 },
+  { id:'A1700', wbs:'RC-1.11', nome:'Pintura exerna',                              pct:0 },
+  { id:'A1710', wbs:'RC-1.11', nome:'Pintura de sinalização e segurança',          pct:0 },
+  { id:'A1720', wbs:'RC-1.12', nome:'Instalação de portas e batentes',             pct:0 },
+  { id:'A1730', wbs:'RC-1.12', nome:'Cotação e compra de Esquadrias',              pct:0 },
+  { id:'A1740', wbs:'RC-1.12', nome:'Instalação de Esquadrias',                    pct:0 },
+  { id:'A1750', wbs:'RC-1.12', nome:'Instalação de peças sanitarias',              pct:0 },
+  { id:'A1760', wbs:'RC-1.12', nome:'Cotação e compra de Ar condicionado',         pct:0 },
+  { id:'A1770', wbs:'RC-1.12', nome:'Instalação de Ar condicionado',               pct:0 },
+  { id:'A1780', wbs:'RC-1.12', nome:'Entrada no AVCB',                             pct:0 },
+  { id:'A1790', wbs:'RC-1.12', nome:'Aguardo do retorno do AVCB',                  pct:0 },
+  { id:'A1800', wbs:'RC-1.12', nome:'Entrada em Habite-se',                        pct:0 },
+  { id:'A1810', wbs:'RC-1.12', nome:'Aguardo de retorno do Habite-se',             pct:0 },
+  { id:'A1820', wbs:'RC-1.12', nome:'Ajustes Finais de Obra',                      pct:0 },
+];
+
+const ORCAMENTO_CONSTRUCAO = [
+  { fase:'Proc. Administrativo', valor:8000   },
+  { fase:'Terreno',              valor:15000  },
+  { fase:'Projeto',              valor:25000  },
+  { fase:'Infraestrutura',       valor:80000  },
+  { fase:'Superestrutura',       valor:120000 },
+  { fase:'Alvenaria',            valor:40000  },
+  { fase:'Pisos',                valor:30000  },
+  { fase:'Elétrica',             valor:35000  },
+  { fase:'Hidráulica',           valor:28000  },
+  { fase:'Cobertura',            valor:22000  },
+  { fase:'Revestimentos',        valor:45000  },
+  { fase:'Pintura',              valor:18000  },
+  { fase:'Acabamentos',          valor:50000  },
+];
+
+const ORCAMENTO_REFORMA = [
+  { fase:'Administrativo (RC-1.1)',  valor:5000  },
+  { fase:'Demolição (RC-1.2)',       valor:12000 },
+  { fase:'Infraestrutura (RC-1.3)',  valor:35000 },
+  { fase:'Estrutura (RC-1.4)',       valor:55000 },
+  { fase:'Alvenaria (RC-1.5)',       valor:28000 },
+  { fase:'Pisos (RC-1.6)',           valor:22000 },
+  { fase:'Elétrica (RC-1.7)',        valor:25000 },
+  { fase:'Hidráulica (RC-1.8)',      valor:20000 },
+  { fase:'Cobertura (RC-1.9)',       valor:18000 },
+  { fase:'Revestimentos (RC-1.10)', valor:32000 },
+  { fase:'Pintura (RC-1.11)',        valor:14000 },
+  { fase:'Acabamentos (RC-1.12)',    valor:38000 },
+];
+
+const WBS_CORES = {
+  'RC-1':'var(--muted)','RC-1.1':'var(--blue)','RC-1.2':'var(--red)',
+  'RC-1.3':'var(--teal)','RC-1.4':'var(--green)','RC-1.5':'var(--muted)',
+  'RC-1.6':'var(--amber)','RC-1.7':'var(--red)','RC-1.8':'#5ba4ff',
+  'RC-1.9':'var(--teal)','RC-1.10':'var(--purple)','RC-1.11':'var(--amber)',
+  'RC-1.12':'var(--green)'
+};
+
+const WBS_LABELS = {
+  'RC-1':'Geral','RC-1.1':'Administrativo','RC-1.2':'Demolição',
+  'RC-1.3':'Infraestrutura','RC-1.4':'Estrutura','RC-1.5':'Alvenaria',
+  'RC-1.6':'Pisos','RC-1.7':'Elétrica','RC-1.8':'Hidráulica',
+  'RC-1.9':'Cobertura','RC-1.10':'Revestimentos','RC-1.11':'Pintura',
+  'RC-1.12':'Acabamentos'
+};
+
+let escopoTipoAtual = 'construcao';
+
+function setEscopoTipo(tipo) {
+  escopoTipoAtual = tipo;
+  const isCon = tipo === 'construcao';
+  document.getElementById('escopoBtnConst').className = 'type-btn ' + (isCon ? 'active-construcao' : '');
+  document.getElementById('escopoBtnRef').className   = 'type-btn ' + (!isCon ? 'active-reforma' : '');
+  document.getElementById('escopoTipoLabel').textContent = isCon ? 'Nova Construção' : 'Reforma';
+  document.getElementById('escopoTabelaTitulo').textContent =
+    isCon ? '📋 Atividades — Nova Construção' : '📦 Atividades — Reforma';
+  popularFiltroWbs();
+  renderEscopoKpis();
+  renderOrcamento();
+  renderEscopoTabela();
+  // Exibe badge "sem orçamento" se a obra ativa tiver esse flag
+  const _obraAtiva = getObraAtivaObj();
+  const _badge = document.getElementById('badgeSemOrc');
+  if (_badge) _badge.style.display = _obraAtiva?.semOrcamento ? 'inline-block' : 'none';
+}
+
+function renderEscopoKpis() {
+  const lista = escopoTipoAtual === 'construcao' ? ATIVIDADES : ESCOPO_REFORMA;
+  const fases = escopoTipoAtual === 'construcao'
+    ? [...new Set(ATIVIDADES.map(a => a.fase))].length
+    : [...new Set(ESCOPO_REFORMA.map(a => a.wbs))].length;
+  const dias  = escopoTipoAtual === 'construcao'
+    ? ATIVIDADES.reduce((s,a) => s + (a.dur||0), 0) + 'd'
+    : '—';
+  const pctMap = LS.get('geo_atividades_pct', {});
+  const conc   = escopoTipoAtual === 'construcao'
+    ? ATIVIDADES.filter(a => (pctMap[a.id]||a.pct) >= 100).length
+    : ESCOPO_REFORMA.filter(a => (pctMap['ESC_'+a.id]||a.pct) >= 100).length;
+  document.getElementById('escopoKpiTotal').textContent = lista.length;
+  document.getElementById('escopoKpiFases').textContent = fases;
+  document.getElementById('escopoKpiDias').textContent  = dias;
+  document.getElementById('escopoKpiConc').textContent  = conc;
+}
+
+function renderOrcamento() {
+  const orc   = escopoTipoAtual === 'construcao' ? ORCAMENTO_CONSTRUCAO : ORCAMENTO_REFORMA;
+  const saved = LS.get('geo_orcamento_' + escopoTipoAtual, {});
+  let html = '';
+  orc.forEach(o => {
+    const v = saved[o.fase] !== undefined ? saved[o.fase] : o.valor;
+    html += `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600;">${o.fase}</div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:11px;color:var(--muted);">R$</span>
+        <input type="number" value="${v}" onchange="salvarOrcamento('${o.fase}', this.value)"
+          style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;
+                 padding:5px 8px;color:var(--teal);font-family:'DM Mono',monospace;font-size:13px;font-weight:700;outline:none;">
+      </div>
+    </div>`;
+  });
+  document.getElementById('orcamentoContainer').innerHTML = html;
+  atualizarTotalOrcamento();
+}
+
+function salvarOrcamento(fase, valor) {
+  const saved = LS.get('geo_orcamento_' + escopoTipoAtual, {});
+  saved[fase] = Number(valor);
+  LS.set('geo_orcamento_' + escopoTipoAtual, saved);
+  atualizarTotalOrcamento();
+}
+
+function atualizarTotalOrcamento() {
+  const orc   = escopoTipoAtual === 'construcao' ? ORCAMENTO_CONSTRUCAO : ORCAMENTO_REFORMA;
+  const saved = LS.get('geo_orcamento_' + escopoTipoAtual, {});
+  const total = orc.reduce((s, o) => s + Number(saved[o.fase] !== undefined ? saved[o.fase] : o.valor), 0);
+  document.getElementById('escopoTotal').textContent =
+    'R$ ' + total.toLocaleString('pt-BR', {minimumFractionDigits:2});
+}
+
+function popularFiltroWbs() {
+  const sel = document.getElementById('filtroWbs');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Todas as fases</option>';
+  if (escopoTipoAtual === 'reforma') {
+    [...new Set(ESCOPO_REFORMA.map(a => a.wbs))].sort().forEach(w => {
+      sel.innerHTML += `<option value="${w}">${w} — ${WBS_LABELS[w]||w}</option>`;
+    });
+  } else {
+    [...new Set(ATIVIDADES.map(a => a.fase))].forEach(f => {
+      sel.innerHTML += `<option value="${f}">Fase ${f} — ${FASES[f]?FASES[f].nome:'Fase '+f}</option>`;
+    });
+  }
+}
+
+function renderEscopoTabela() {
+  const tbody  = document.getElementById('tbodyEscopo');
+  if (!tbody) return;
+  const busca  = (document.getElementById('searchEscopo').value||'').toLowerCase();
+  const filtro = document.getElementById('filtroWbs').value;
+  const pctMap = LS.get('geo_atividades_pct', {});
+
+  const lista = (escopoTipoAtual === 'reforma' ? ESCOPO_REFORMA : ATIVIDADES).filter(a => {
+    if (escopoTipoAtual === 'reforma') {
+      if (filtro && a.wbs !== filtro) return false;
+    } else {
+      if (filtro !== '' && a.fase !== Number(filtro)) return false;
+    }
+    if (busca && !a.nome.toLowerCase().includes(busca)) return false;
+    return true;
+  });
+
+  if (!lista.length) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--muted);">Nenhuma atividade encontrada</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = lista.map(a => {
+    const isReforma = escopoTipoAtual === 'reforma';
+    const chave     = isReforma ? 'ESC_'+a.id : a.id;
+    const pct       = pctMap[chave] !== undefined ? pctMap[chave] : a.pct;
+    const wbsLabel  = isReforma ? a.wbs : `Fase ${a.fase}`;
+    const cor       = isReforma ? (WBS_CORES[a.wbs]||'var(--muted)') : 'var(--blue)';
+    const ini       = isReforma ? '28/10' : a.ini;
+    const fim       = isReforma ? '11/11' : a.fim;
+    const stCls     = pct >= 100 ? 'dot-done' : pct > 0 ? 'dot-progress' : 'dot-pending';
+    const stTxt     = pct >= 100 ? 'Concluído' : pct > 0 ? 'Em Andamento' : 'Não Iniciado';
+    return `<tr>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">${a.id}</td>
+      <td><span style="font-size:10px;font-weight:700;color:${cor};background:rgba(255,255,255,.05);
+           padding:2px 7px;border-radius:4px;border:1px solid ${cor}33;">${wbsLabel}</span></td>
+      <td style="font-size:12px;font-weight:500;">${a.nome}</td>
+      <td><span class="status-dot ${stCls}"></span><span style="font-size:11px;">${stTxt}</span></td>
+      <td style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;">${ini}</td>
+      <td style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;">${fim}</td>
+      <td style="min-width:100px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div class="mini-bar"><div class="mini-fill" style="width:${pct}%;background:${pct>=100?'var(--green)':pct>0?'var(--amber)':'var(--border)'};"></div></div>
+          <span style="font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);">${pct}%</span>
+        </div>
+      </td>
+      <td>
+        <input type="range" min="0" max="100" value="${pct}" step="5"
+          style="width:70px;accent-color:var(--blue);"
+          oninput="atualizarEscopoPct('${a.id}', this.value)"
+          title="Arraste para atualizar progresso">
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function atualizarEscopoPct(id, valor) {
+  const pctMap = LS.get('geo_atividades_pct', {});
+  pctMap[escopoTipoAtual === 'reforma' ? 'ESC_'+id : id] = Number(valor);
+  LS.set('geo_atividades_pct', pctMap);
+  renderEscopoTabela();
+  renderEscopoKpis();
+}
+
+function exportarEscopo() {
+  const payload = {
+    tipo: escopoTipoAtual,
+    atividades: escopoTipoAtual === 'construcao' ? ATIVIDADES : ESCOPO_REFORMA,
+    orcamento:  escopoTipoAtual === 'construcao' ? ORCAMENTO_CONSTRUCAO : ORCAMENTO_REFORMA,
+    exportadoEm: new Date().toLocaleString('pt-BR'),
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `Escopo_${escopoTipoAtual}_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   MULTI-OBRA — gerenciamento de obras simultâneas
+   geo_obras           → [{id, nome, tipo, local, inicio}]
+   geo_obra_ativa      → id string
+   geo_diarios_{id}    → diários da obra
+   geo_incidentes_{id} → incidentes da obra
+   geo_aprovacoes_{id} → aprovações da obra
+   geo_fotos_{id}      → fotos da obra
+═══════════════════════════════════════════════════════ */
+
+function getObras() {
+  return LS.get('geo_obras', [
+    { id: 'obra_default', nome: 'Igreja Lauro de Freitas Central', tipo: 'construcao', local: 'Simões Filho / BA', inicio: '2023-10-30' }
+  ]);
+}
+
+function getObraAtiva() {
+  return LS.get('geo_obra_ativa', 'obra_default');
+}
+
+function getObraAtivaObj() {
+  const obras = getObras();
+  const id    = getObraAtiva();
+  return obras.find(o => o.id === id) || obras[0];
+}
+
+function lsObra(chave) {
+  // retorna a chave isolada por obra: geo_diarios_obra_default, etc.
+  return chave + '_' + getObraAtiva();
+}
+
+/* Reconstrói o seletor de obras no header */
+function popularSeletorObras() {
+  const sel    = document.getElementById('obraAtivaSelect');
+  if (!sel) return;
+  const obras  = getObras();
+  const ativa  = getObraAtiva();
+  sel.innerHTML = obras.map(o =>
+    `<option value="${o.id}" ${o.id === ativa ? 'selected' : ''}>
+      ${o.tipo === 'reforma' ? '🔧' : '🏗️'} ${o.nome}
+    </option>`
+  ).join('');
+  atualizarBadgeTipo();
+}
+
+function atualizarBadgeTipo() {
+  const obra = getObraAtivaObj();
+  if (!obra) return;
+  const tipoLabel = document.getElementById('tipoLabel');
+  if (tipoLabel) {
+    tipoLabel.innerHTML = obra.tipo === 'reforma'
+      ? '<span class="badge-reforma">Reforma</span>'
+      : '<span class="badge-construcao">Nova Construção</span>';
+  }
+  // Sincroniza badge no dashboard
+  const btnConst = document.getElementById('btnConst');
+  const btnRef   = document.getElementById('btnRef');
+  if (btnConst && btnRef) {
+    const isCon = obra.tipo === 'construcao';
+    btnConst.className = 'type-btn ' + (isCon ? 'active-construcao' : '');
+    btnRef.className   = 'type-btn ' + (!isCon ? 'active-reforma' : '');
+  }
+  // Sincroniza label do cronograma
+  const modeloLabel = document.getElementById('modeloLabel');
+  if (modeloLabel) modeloLabel.textContent = obra.tipo === 'reforma' ? 'Reforma' : 'Nova Construção';
+}
+
+function trocarObraAtiva(id) {
+  LS.set('geo_obra_ativa', id);
+  atualizarBadgeTipo();
+  syncLocalStorage();
+  popularFiltrosGaleria();
+  renderGaleria();
+  updateChipFotos();
+}
+
+function abrirModalNovaObra() {
+  document.getElementById('modalNovaObraOverlay').classList.add('open');
+  document.getElementById('novaObraInicio').value = new Date().toISOString().slice(0,10);
+}
+
+/* ─── Distribui avanço pelas atividades do escopo de reforma/construção ───
+   Lógica: atividades ordenadas pelas fases, preenchidas sequencialmente
+   até atingir o percentual total informado. O resultado fica visível
+   na aba Escopo como checklist: verde = feito, cinza = pendente.      */
+function _aplicarAvancoPorEscopo(obraId, tipo, pctTotal) {
+  const lista = tipo === 'reforma' ? ESCOPO_REFORMA : ATIVIDADES;
+  const total = lista.length;
+  if (!total || pctTotal <= 0) return;
+
+  // Quantas atividades marcar como 100%
+  const nConcluidas = Math.floor(total * pctTotal / 100);
+  // A atividade seguinte fica com o saldo (em andamento)
+  const saldo = Math.round((total * pctTotal / 100 - nConcluidas) * 100);
+
+  const pctMap = {};
+  lista.forEach((a, i) => {
+    const chave = tipo === 'reforma' ? 'ESC_' + a.id : a.id;
+    if (i < nConcluidas)          pctMap[chave] = 100;
+    else if (i === nConcluidas)   pctMap[chave] = saldo;
+    else                          pctMap[chave] = 0;
+  });
+
+  // Salva na chave prefixada pela obra recém-criada
+  LS.set('geo_atividades_pct_' + obraId, pctMap);
+  // Também atualiza o avanço físico global
+  LS.set('geo_avanco_fisico_' + obraId, pctTotal);
+}
+
+function toggleSituacaoObraFields(val) {
+  const campos = document.getElementById('camposAndamento');
+  if (campos) campos.style.display = val === 'andamento' ? 'block' : 'none';
+}
+
+function preencherDadosEdif(val) {
+  if (!val) return;
+  const [bairro, codigo, cidade] = val.split('|');
+  const nomeEl  = document.getElementById('novaObraNome');
+  const localEl = document.getElementById('novaObraLocal');
+  // Preenche nome se estiver vazio
+  if (nomeEl && !nomeEl.value.trim())
+    nomeEl.value = 'Igreja ' + cidade + ' — ' + bairro;
+  if (localEl)
+    localEl.value = bairro + ' / ' + cidade + ' — ' + codigo;
+}
+
+function fecharModalNovaObra() {
+  document.getElementById('modalNovaObraOverlay').classList.remove('open');
+  ['novaObraNome','novaObraLocal','novaObraInicio'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const edifSel = document.getElementById('novaObraEdif');
+  if (edifSel) edifSel.value = '';
+}
+
+function salvarNovaObra() {
+  const nome  = document.getElementById('novaObraNome').value.trim();
+  const tipo  = document.getElementById('novaObraTipo').value;
+  const local = document.getElementById('novaObraLocal').value.trim();
+  const inicio= document.getElementById('novaObraInicio').value;
+  if (!nome) { alert('Informe o nome da obra.'); return; }
+  const edifVal = (document.getElementById('novaObraEdif')?.value || '').split('|');
+  const bairro  = edifVal[0] || '';
+  const codigo  = edifVal[1] || '';
+  const cidade  = edifVal[2] || '';
+  const id         = 'obra_' + Date.now();
+  const situacao   = document.getElementById('novaObraSituacao')?.value || 'nova';
+  const avanco     = parseInt(document.getElementById('novaObraAvanco')?.value || '0');
+  const semOrc     = document.getElementById('novaObraSemOrc')?.checked || false;
+  const obsEntrada = document.getElementById('novaObraObs')?.value.trim() || '';
+
+  const obras = getObras();
+  obras.push({ id, nome, tipo, local, inicio, bairro, codigo, cidade,
+               situacao, avancaoInicial: avanco, semOrcamento: semOrc, obsEntrada });
+  LS.set('geo_obras', obras);
+  LS.set('geo_obra_ativa', id);
+
+  // Se obra já em andamento: pré-preencher percentuais do escopo
+  if (situacao === 'andamento' && avanco > 0) {
+    _aplicarAvancoPorEscopo(id, tipo, avanco);
+  }
+
+  fecharModalNovaObra();
+  popularSeletorObras();
+  syncLocalStorage();
+  popularFiltrosGaleria();
+
+  // Abrir aba Escopo automaticamente para o gestor ver o checklist
+  if (situacao === 'andamento') {
+    showTab('escopo', document.getElementById('tabBtnEscopo'));
+    setEscopoTipo(tipo);
+    setTimeout(() => showT('✅ Obra criada! Revise o escopo e ajuste o checklist.'), 400);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   OVERRIDE syncLocalStorage — usa chaves por obra
+═══════════════════════════════════════════════════════ */
+syncLocalStorage = function() {
+  // Reescreve leitura de pct para a obra ativa
+  const pctMap = LS.get(lsObra('geo_atividades_pct'), {});
+  ATIVIDADES.forEach(a => {
+    if (pctMap[a.id] !== undefined) {
+      a.pct    = pctMap[a.id];
+      a.status = a.pct >= 100 ? 'done' : a.pct > 0 ? 'progress' : 'pending';
+    }
+  });
+  FASES.forEach((f, idx) => {
+    const af = ATIVIDADES.filter(a => a.fase === idx);
+    if (af.length) {
+      const media = af.reduce((s,a) => s + a.pct, 0) / af.length;
+      f.pct    = Math.round(media);
+      f.status = f.pct >= 100 ? 'done' : f.pct > 0 ? 'progress' : 'pending';
+    }
+  });
+  renderProgressFases();
+  renderCronograma();
+  renderKPIs();
+  renderIncidentesRecentes();
+  renderDiariosRecentes();
+  renderIncidentesCompleto();
+  renderDiariosCompleto();
+  renderAprovacoes();
+  updateChips();
+  updateChipFotos();
+  const now = new Date();
+  document.getElementById('footerSync').textContent =
+    'Última sync: ' + now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+};
+
+/* Sobrescreve funções que liam geo_diarios/geo_incidentes/geo_aprovacoes sem prefixo */
+updateChips = function() {
+  const diarios    = LS.get(lsObra('geo_diarios'), []);
+  const incidentes = LS.get(lsObra('geo_incidentes'), []);
+  const aprovacoes = LS.get(lsObra('geo_aprovacoes'), []);
+  const chipD = document.getElementById('chipDiarios');
+  const chipI = document.getElementById('chipIncidentes');
+  const chipA = document.getElementById('chipAprov');
+  if (chipD) chipD.textContent = diarios.length;
+  if (chipI) chipI.textContent = incidentes.length;
+  if (chipA) chipA.textContent = aprovacoes.filter(a=>a.status==='pendente').length;
+};
+
+function updateChipFotos() {
+  const fotos = LS.get(lsObra('geo_fotos'), []);
+  const chip  = document.getElementById('chipFotos');
+  if (chip) chip.textContent = fotos.length;
+}
+
+/* ── Render KPIs usa dados da obra ativa ── */
+renderKPIs = function() {
+  const diarios    = LS.get(lsObra('geo_diarios'), []);
+  const incidentes = LS.get(lsObra('geo_incidentes'), []);
+  const concluidas = ATIVIDADES.filter(a => a.pct >= 100).length;
+  const andamento  = ATIVIDADES.filter(a => a.pct > 0 && a.pct < 100).length;
+  const pendentes  = ATIVIDADES.filter(a => a.pct === 0).length;
+  const total      = ATIVIDADES.length;
+  const pctGeral   = total ? Math.round(ATIVIDADES.reduce((s,a)=>s+a.pct,0)/total) : 0;
+  const setEl = (id, v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  setEl('kpiTotal',      total);
+  setEl('kpiConcluidas', concluidas);
+  setEl('kpiAndamento',  andamento);
+  setEl('kpiPendentes',  pendentes);
+  setEl('kpiIncidentes', incidentes.length);
+  setEl('kpiDiarios',    diarios.length);
+  setEl('kpiPctConcluidas', '+'+Math.round(concluidas/total*100)+'%');
+  setEl('kpiPctPend',    pendentes + ' ativs');
+  setEl('kpiAvFisico',   'Avanço: '+pctGeral+'%');
+  const graves = incidentes.filter(i=>i.gravidade==='Grave'||i.gravidade==='Crítico').length;
+  setEl('kpiIncGrave', graves ? graves+' grave(s)' : '—');
+  if (diarios.length) {
+    const ult = diarios[diarios.length-1];
+    setEl('kpiUltimoEnvio', ult.data || '—');
+  }
+};
+
+renderDiariosRecentes = function() {
+  const diarios = LS.get(lsObra('geo_diarios'), []);
+  const el = document.getElementById('diariosRecentes');
+  if (!el) return;
+  if (!diarios.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">📭</div><p>Nenhum diário enviado ainda</p><small>Sincronize com o Diário de Obra v2</small></div>`;
+    return;
+  }
+  el.innerHTML = [...diarios].reverse().slice(0,3).map(diarioHTML).join('');
+};
+
+renderDiariosCompleto = function() {
+  const diarios = LS.get(lsObra('geo_diarios'), []);
+  const el = document.getElementById('diariosListaCompleta');
+  if (!el) return;
+  if (!diarios.length) {
+    el.innerHTML = `<div class="empty-state" style="padding:60px 20px;"><div class="icon">📭</div><p>Nenhum diário encontrado</p><small>Envie um diário pelo Diário de Obra v2 e clique em Sincronizar</small></div>`;
+    return;
+  }
+  el.innerHTML = `<div style="display:flex;flex-direction:column;gap:0;">${[...diarios].reverse().map(diarioHTML).join('')}</div>`;
+};
+
+renderIncidentesRecentes = function() {
+  const incidentes = LS.get(lsObra('geo_incidentes'), []);
+  const el = document.getElementById('incidentesRecentes');
+  if (!el) return;
+  if (!incidentes.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">🟢</div><p>Nenhum incidente registrado</p></div>`;
+    return;
+  }
+  el.innerHTML = [...incidentes].reverse().slice(0,3).map(incidenteHTML).join('');
+};
+
+renderIncidentesCompleto = function() {
+  const filtroGrav = document.getElementById('filtroGrav');
+  const filtro     = filtroGrav ? filtroGrav.value : '';
+  const incidentes = LS.get(lsObra('geo_incidentes'), []);
+  const filtrados  = filtro ? incidentes.filter(i => i.gravidade === filtro) : incidentes;
+  ['Leve','Médio','Grave','Crítico'].forEach(g => {
+    const key = 'incKpi' + g.replace('é','e').replace('í','i');
+    const el  = document.getElementById(key);
+    if (el) el.textContent = incidentes.filter(i => i.gravidade === g).length;
+  });
+  const tot = document.getElementById('incTotal');
+  if (tot) tot.textContent = filtrados.length + ' registro(s)';
+  const el = document.getElementById('incidentesListaCompleta');
+  if (!el) return;
+  if (!filtrados.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">🟢</div><p>Nenhum incidente encontrado</p></div>`;
+    return;
+  }
+  el.innerHTML = [...filtrados].reverse().map(incidenteHTML).join('');
+};
+
+renderAprovacoes = function() {
+  const aprovacoes = LS.get(lsObra('geo_aprovacoes'), []);
+  const filtroEl   = document.getElementById('filtroAprov');
+  const filtro     = filtroEl ? filtroEl.value : '';
+  const filtradas  = filtro ? aprovacoes.filter(a => a.status === filtro) : aprovacoes;
+  const setEl = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  setEl('aprovKpiPend',  aprovacoes.filter(a=>a.status==='pendente').length);
+  setEl('aprovKpiAprov', aprovacoes.filter(a=>a.status==='aprovado').length);
+  setEl('aprovKpiRej',   aprovacoes.filter(a=>a.status==='rejeitado').length);
+  const el = document.getElementById('aprovacoesList');
+  if (!el) return;
+  if (!filtradas.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>Nenhuma solicitação encontrada</p></div>`;
+    return;
+  }
+  const prioMap = {'Urgente':'🚨','Alta':'🔴','Normal':'🟡'};
+  el.innerHTML = [...filtradas].reverse().map((a) => {
+    const actualIdx = aprovacoes.indexOf(a);
+    return `<div class="aprov-item ${a.status}">
+      <div class="aprov-header">
+        <div>
+          <div class="aprov-title">${prioMap[a.prioridade]||'🟡'} ${a.tipo}</div>
+          <div class="aprov-meta">${a.criadoEm||'—'} · ${a.fase||'Fase não informada'}</div>
+        </div>
+        <span class="aprov-status st-${a.status}">
+          ${a.status==='pendente'?'⏳ Pendente':a.status==='aprovado'?'✅ Aprovado':'❌ Rejeitado'}
+        </span>
+      </div>
+      ${a.responsavel?`<div class="aprov-meta" style="margin-top:5px;">👤 ${a.responsavel}</div>`:''}
+      ${a.desc?`<div class="aprov-desc">${a.desc}</div>`:''}
+      ${a.obsGestor?`<div class="aprov-desc" style="color:var(--teal);margin-top:4px;">💬 Gestor: ${a.obsGestor}</div>`:''}
+      ${a.status==='pendente'?`<div class="aprov-actions">
+        <button class="btn-success" onclick="decidirAprov(${actualIdx},'aprovado')">✅ Aprovar</button>
+        <button class="btn-danger"  onclick="decidirAprov(${actualIdx},'rejeitado')">❌ Rejeitar</button>
+      </div>`:''}
+    </div>`;
+  }).join('');
+};
+
+/* decidirAprov também usa obra ativa */
+function decidirAprov(idx, decisao) {
+  const aprovacoes = LS.get(lsObra('geo_aprovacoes'), []);
+  if (!aprovacoes[idx]) return;
+  aprovacoes[idx].status     = decisao;
+  aprovacoes[idx].decididoEm = new Date().toLocaleString('pt-BR');
+  LS.set(lsObra('geo_aprovacoes'), aprovacoes);
+  renderAprovacoes();
+  updateChips();
+}
+
+/* salvarAprovacao também usa obra ativa */
+function salvarAprovacao() {
+  const tipo  = document.getElementById('apTipo').value;
+  const fase  = document.getElementById('apFase').value;
+  const resp  = document.getElementById('apResp').value.trim();
+  const desc  = document.getElementById('apDesc').value;
+  const prio  = document.getElementById('apPrio').value;
+  if (!desc.trim()) { alert('Preencha a descrição da solicitação.'); return; }
+  const aprovacoes = LS.get(lsObra('geo_aprovacoes'), []);
+  aprovacoes.push({
+    id: Date.now(), tipo, fase, responsavel: resp, desc, prioridade: prio,
+    status: 'pendente', obsGestor: '',
+    criadoEm: new Date().toLocaleString('pt-BR'), decididoEm: null,
+  });
+  LS.set(lsObra('geo_aprovacoes'), aprovacoes);
+  closeModalAprov();
+  renderAprovacoes();
+  updateChips();
+  ['apFase','apResp','apDesc'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+}
+
+/* ═══════════════════════════════════════════════════════
+   diarioHTML — versão atualizada com fotos e badge reforma
+═══════════════════════════════════════════════════════ */
+function diarioHTML(d) {
+  const ativs    = Array.isArray(d.atividades) ? d.atividades : [];
+  const obra     = getObraAtivaObj();
+  const isReform = obra && obra.tipo === 'reforma';
+  const tags     = ativs.slice(0,4).map(a =>
+    `<span class="diario-tag">${typeof a==='object'?(a.nome||a.id||'—'):a}</span>`
+  ).join('') + (ativs.length>4?`<span class="diario-tag">+${ativs.length-4}</span>`:'');
+
+  // Fotos vinculadas a este diário
+  const todasFotos = LS.get(lsObra('geo_fotos'), []);
+  const fotosDiario = d.id ? todasFotos.filter(f => f.diarioId === d.id) : [];
+  const fotosHTML = fotosDiario.length
+    ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">
+        ${fotosDiario.slice(0,4).map((f,i) =>
+          `<div style="width:54px;height:54px;border-radius:6px;overflow:hidden;cursor:pointer;border:1px solid var(--border);"
+                onclick="abrirLightboxDiario('${d.id}',${i})">
+             <img src="${f.base64}" style="width:100%;height:100%;object-fit:cover;">
+           </div>`
+        ).join('')}
+        ${fotosDiario.length>4?`<div style="width:54px;height:54px;border-radius:6px;background:var(--surface2);
+           border:1px solid var(--border);display:grid;place-items:center;font-size:11px;
+           color:var(--muted);cursor:pointer;" onclick="showTab('galeria',document.getElementById('tabBtnGaleria'))">
+           +${fotosDiario.length-4}</div>`:''}
+      </div>` : '';
+
+  return `<div class="diario-item ${isReform?'diario-item-reform':''}">
+    <div class="diario-header">
+      <div>
+        <div class="diario-obra">${d.obra||'Obra não informada'}
+          ${isReform?'<span class="badge-reforma" style="font-size:9px;padding:1px 6px;margin-left:6px;">Reforma</span>':''}
+        </div>
+        <div class="diario-resp">👤 ${d.responsavel||d.encarregado||'—'} · Turno: ${d.turno||'—'}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+        <div class="diario-date">${d.data||'—'}</div>
+        ${fotosDiario.length?`<span style="font-size:10px;color:var(--teal);">📷 ${fotosDiario.length} foto(s)</span>`:''}
+      </div>
+    </div>
+    ${tags?`<div class="diario-tags">${tags}</div>`:''}
+    ${d.observacoes?`<div class="diario-resumo">📝 ${d.observacoes.substring(0,120)}${d.observacoes.length>120?'…':''}</div>`:''}
+    ${fotosHTML}
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   GALERIA DE FOTOS
+═══════════════════════════════════════════════════════ */
+let _lightboxFotos = [];
+let _lightboxIdx   = 0;
+
+function adicionarFotos(input) {
+  const files   = Array.from(input.files);
+  const obraObj = getObraAtivaObj();
+  if (!files.length) return;
+  let processados = 0;
+  const fotos   = LS.get(lsObra('geo_fotos'), []);
+
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      fotos.push({
+        id:        'foto_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+        base64:    e.target.result,
+        nome:      file.name,
+        data:      new Date().toLocaleDateString('pt-BR'),
+        obraId:    getObraAtiva(),
+        obraNome:  obraObj ? obraObj.nome : '—',
+        tipo:      obraObj ? obraObj.tipo : 'construcao',
+        diarioId:  null,
+      });
+      processados++;
+      if (processados === files.length) {
+        LS.set(lsObra('geo_fotos'), fotos);
+        renderGaleria();
+        updateChipFotos();
+        popularFiltrosGaleria();
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function popularFiltrosGaleria() {
+  const obras  = getObras();
+  const selO   = document.getElementById('filtroGaleriaObra');
+  const selD   = document.getElementById('filtroGaleriaData');
+  if (!selO || !selD) return;
+
+  selO.innerHTML = '<option value="">Todas as obras</option>' +
+    obras.map(o => `<option value="${o.id}">${o.tipo==='reforma'?'🔧':'🏗️'} ${o.nome}</option>`).join('');
+
+  // Datas únicas de todas as fotos de todas as obras
+  const todasDatas = new Set();
+  obras.forEach(o => {
+    const fs = LS.get('geo_fotos_' + o.id, []);
+    fs.forEach(f => { if (f.data) todasDatas.add(f.data); });
+  });
+  selD.innerHTML = '<option value="">Todas as datas</option>' +
+    [...todasDatas].sort().reverse().map(d => `<option value="${d}">${d}</option>`).join('');
+}
+
+function renderGaleria() {
+  const filtroObra = (document.getElementById('filtroGaleriaObra')||{}).value || '';
+  const filtroData = (document.getElementById('filtroGaleriaData')||{}).value || '';
+  const obras      = getObras();
+  let todasFotos   = [];
+
+  obras.forEach(o => {
+    if (filtroObra && o.id !== filtroObra) return;
+    const fs = LS.get('geo_fotos_' + o.id, []);
+    todasFotos = todasFotos.concat(fs);
+  });
+
+  if (filtroData) todasFotos = todasFotos.filter(f => f.data === filtroData);
+  todasFotos = todasFotos.slice().reverse();
+
+  // KPIs
+  const todas      = obras.flatMap(o => LS.get('geo_fotos_'+o.id, []));
+  const hoje       = new Date().toLocaleDateString('pt-BR');
+  document.getElementById('galKpiTotal').textContent      = todas.length;
+  document.getElementById('galKpiConstrucao').textContent = todas.filter(f=>f.tipo==='construcao').length;
+  document.getElementById('galKpiReforma').textContent    = todas.filter(f=>f.tipo==='reforma').length;
+  document.getElementById('galKpiHoje').textContent       = todas.filter(f=>f.data===hoje).length;
+
+  const cont = document.getElementById('galeriaContainer');
+  const vaz  = document.getElementById('galeriaVazia');
+  const cnt  = document.getElementById('galContador');
+  if (cnt) cnt.textContent = todasFotos.length + ' foto(s)';
+
+  if (!todasFotos.length) {
+    cont.innerHTML = '';
+    if (vaz) vaz.style.display = 'block';
+    return;
+  }
+  if (vaz) vaz.style.display = 'none';
+
+  _lightboxFotos = todasFotos;
+  cont.innerHTML = todasFotos.map((f, i) => `
+    <div class="galeria-thumb" onclick="abrirLightbox(${i})">
+      <img src="${f.base64}" alt="${f.nome}" loading="lazy">
+      <div class="thumb-overlay">🔍</div>
+      <div class="thumb-meta">${f.data||'—'} · ${f.tipo==='reforma'?'🔧':'🏗️'}</div>
+      <button class="thumb-del" onclick="deletarFoto('${f.id}','${f.obraId}');event.stopPropagation();" title="Remover foto">✕</button>
+    </div>`
+  ).join('');
+}
+
+function deletarFoto(fotoId, obraId) {
+  if (!confirm('Remover esta foto?')) return;
+  const fotos = LS.get('geo_fotos_' + obraId, []);
+  LS.set('geo_fotos_' + obraId, fotos.filter(f => f.id !== fotoId));
+  renderGaleria();
+  updateChipFotos();
+}
+
+function abrirLightbox(idx) {
+  _lightboxIdx = idx;
+  const f = _lightboxFotos[idx];
+  if (!f) return;
+  document.getElementById('fotoLightboxImg').src = f.base64;
+  document.getElementById('fotoLightboxInfo').textContent =
+    `${idx+1} / ${_lightboxFotos.length}  ·  ${f.nome}  ·  ${f.obraNome||'—'}  ·  ${f.data||'—'}`;
+  document.getElementById('fotoLightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function abrirLightboxDiario(diarioId, fotoIdx) {
+  const todasFotos = LS.get(lsObra('geo_fotos'), []);
+  const fotosDiario = todasFotos.filter(f => f.diarioId === diarioId);
+  if (!fotosDiario.length) return;
+  _lightboxFotos = fotosDiario;
+  abrirLightbox(fotoIdx);
+}
+
+function fecharLightbox(e) {
+  // Fecha apenas quando clicar no overlay de fundo (não nos botões ou imagem)
+  if (e && e.target && e.target !== document.getElementById('fotoLightbox')) return;
+  document.getElementById('fotoLightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function navFoto(dir) {
+  const total = _lightboxFotos.length;
+  if (!total) return;
+  _lightboxIdx = (_lightboxIdx + dir + total) % total;
+  abrirLightbox(_lightboxIdx);
+}
+
+// Navegação lightbox por teclado
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('fotoLightbox').classList.contains('open')) return;
+  if (e.key === 'ArrowRight') navFoto(1);
+  if (e.key === 'ArrowLeft')  navFoto(-1);
+  if (e.key === 'Escape')     fecharLightbox();
+});
+
+/* ═══════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════ */
+syncLocalStorage();
+popularSeletorObras();
+setEscopoTipo('construcao');
+popularFiltrosGaleria();
+renderGaleria();
+
+// Auto-refresh a cada 30s para pegar novos diários/incidentes
+setInterval(syncLocalStorage, 30000);
+</script>
+</body>
+</html>

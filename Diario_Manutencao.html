@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GeoSistema PRO — Diário de Manutenção</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f0f4f8;--sur:#fff;--brd:#e2e8f0;
+  --teal:#0dcfb0;--teal-lt:#e0f7f3;--teal-dk:#08a88e;
+  --blue:#1a73e8;--blue-lt:#e8f0fd;
+  --amber:#f59e0b;--amber-lt:#fef3c7;
+  --red:#ef4444;--red-lt:#fee2e2;
+  --green:#22c55e;--green-lt:#dcfce7;
+  --purple:#8b5cf6;--purple-lt:#ede9fe;
+  --orange:#f97316;--orange-lt:#fff7ed;
+  --text:#1e293b;--muted:#64748b;
+  --r:14px;--sh:0 2px 16px rgba(0,0,0,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:90px;}
+
+/* ── HEADER ── */
+.app-header{background:var(--teal-dk);padding:16px 20px 0;}
+.h-top{display:flex;align-items:center;justify-content:space-between;}
+.h-logo{display:flex;align-items:center;gap:10px;}
+.h-icon{width:38px;height:38px;background:rgba(255,255,255,.2);border-radius:10px;display:grid;place-items:center;font-size:20px;}
+.h-title{color:#fff;font-size:17px;font-weight:700;line-height:1.1;}
+.h-sub{color:rgba(255,255,255,.7);font-size:11px;}
+.h-nav{display:flex;gap:5px;}
+.h-nav a{color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:5px 9px;border-radius:6px;text-decoration:none;border:1px solid rgba(255,255,255,.2);}
+.h-nav .active-nav{color:#fff;background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.5);}
+
+/* ── SELETOR EDIFICAÇÃO ── */
+.edif-bar{background:rgba(0,0,0,.15);padding:8px 20px;display:flex;align-items:center;gap:8px;}
+.edif-bar select{
+  flex:1;padding:6px 10px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+  border-radius:8px;color:#fff;font-size:12px;font-family:'Outfit',sans-serif;outline:none;cursor:pointer;
+}
+.edif-bar select option{background:#0f6e56;color:#fff;}
+.edif-bar label{color:rgba(255,255,255,.8);font-size:11px;font-weight:600;white-space:nowrap;}
+
+/* ── STEP BAR ── */
+.step-bar{display:flex;gap:6px;padding:12px 0 0;}
+.si{flex:1;}
+.sl{height:4px;border-radius:99px;background:rgba(255,255,255,.25);transition:background .3s;}
+.sl.done{background:rgba(255,255,255,.75);}
+.sl.active{background:#fff;}
+.slbl{font-size:10px;color:rgba(255,255,255,.5);text-align:center;margin-top:4px;font-weight:600;}
+.slbl.active{color:rgba(255,255,255,.95);}
+.wave{height:18px;background:var(--teal-dk);clip-path:ellipse(55% 100% at 50% 0%);margin-bottom:-1px;}
+
+/* ── CONTENT ── */
+.content{padding:18px 16px;max-width:480px;margin:0 auto;}
+
+/* ── CARDS ── */
+.sc{background:var(--sur);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:14px;overflow:hidden;border:1px solid var(--brd);animation:su .3s ease both;}
+@keyframes su{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.sc:nth-child(2){animation-delay:.06s;}.sc:nth-child(3){animation-delay:.12s;}
+.sc-h{padding:14px 18px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:10px;}
+.sc-ico{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:17px;flex-shrink:0;}
+.it{background:var(--teal-lt);}.ib{background:var(--blue-lt);}.ia{background:var(--amber-lt);}.ir{background:var(--red-lt);}.ip{background:var(--purple-lt);}.io{background:var(--orange-lt);}
+.sc-title{font-size:14px;font-weight:700;}
+.sc-sub{font-size:11px;color:var(--muted);}
+.sc-b{padding:16px 18px;}
+.fg{margin-bottom:13px;}
+.fg:last-child{margin-bottom:0;}
+label.fl{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px;}
+input,select,textarea{width:100%;padding:10px 13px;background:var(--bg);border:1.5px solid var(--brd);border-radius:10px;color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;outline:none;transition:border-color .2s;-webkit-appearance:none;}
+input:focus,select:focus,textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,207,176,.1);}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+.fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+
+/* ── SERVIÇOS ── */
+.serv-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:13px;}
+.serv-btn{
+  padding:12px 10px;border-radius:10px;border:1.5px solid var(--brd);background:var(--bg);
+  font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;cursor:pointer;
+  text-align:center;line-height:1.4;transition:all .15s;-webkit-user-select:none;user-select:none;
+}
+.serv-btn.sel{background:var(--teal-lt);border-color:var(--teal);color:#065f46;}
+.serv-btn .sb-ico{font-size:22px;display:block;margin-bottom:5px;}
+.serv-btn .sb-lbl{font-size:11px;font-weight:700;}
+
+/* ── STATUS SERVIÇO ── */
+.status-grid{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px;}
+.status-btn{
+  flex:1;min-width:80px;padding:9px 8px;border-radius:9px;border:1.5px solid var(--brd);
+  background:var(--bg);font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;
+  cursor:pointer;text-align:center;-webkit-user-select:none;user-select:none;transition:all .15s;
+}
+.st-concluido.sel{background:var(--green-lt);border-color:var(--green);color:#15803d;}
+.st-parcial.sel{background:var(--amber-lt);border-color:var(--amber);color:#92400e;}
+.st-nao.sel{background:var(--red-lt);border-color:var(--red);color:#991b1b;}
+.st-aguardando.sel{background:var(--blue-lt);border-color:var(--blue);color:var(--blue);}
+
+/* ── URGÊNCIA ── */
+.urg-grid{display:flex;gap:8px;margin-bottom:13px;}
+.urg-btn{
+  flex:1;padding:10px 8px;border-radius:9px;border:1.5px solid var(--brd);
+  background:var(--bg);font-size:12px;font-weight:700;cursor:pointer;
+  text-align:center;-webkit-user-select:none;user-select:none;transition:all .15s;
+}
+.urg-normal.sel{background:var(--green-lt);border-color:var(--green);color:#15803d;}
+.urg-atencao.sel{background:var(--amber-lt);border-color:var(--amber);color:#92400e;}
+.urg-urgente.sel{background:var(--red-lt);border-color:var(--red);color:#991b1b;}
+
+/* ── MATERIAIS ── */
+.mat-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--brd);}
+.mat-item:last-child{border-bottom:none;}
+.mat-desc{flex:1;font-size:13px;}
+.mat-qtd{width:60px;padding:5px 8px;font-size:12px;text-align:center;border-radius:7px;}
+.btn-add-mat{
+  width:100%;padding:10px;border-radius:10px;border:1.5px dashed var(--brd);
+  background:transparent;color:var(--teal);font-family:'Outfit',sans-serif;
+  font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;gap:6px;margin-top:8px;transition:all .2s;
+}
+.btn-add-mat:active{background:var(--teal-lt);}
+
+/* ── MÃO DE OBRA ── */
+.mdo-item{display:flex;align-items:center;gap:10px;padding:10px 13px;background:var(--bg);border-radius:10px;border:1.5px solid var(--brd);margin-bottom:8px;}
+.mdo-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--blue));display:grid;place-items:center;color:#fff;font-size:15px;flex-shrink:0;}
+.mdo-nome{flex:1;font-size:13px;font-weight:600;}
+.mdo-func{font-size:11px;color:var(--muted);}
+.mdo-h{font-family:'DM Mono',monospace;font-size:12px;color:var(--teal);font-weight:500;}
+.btn-rm{width:28px;height:28px;border-radius:7px;border:none;background:var(--red-lt);color:var(--red);cursor:pointer;font-size:14px;display:grid;place-items:center;}
+.btn-add{width:100%;padding:11px;border-radius:10px;border:1.5px dashed var(--brd);background:transparent;color:var(--teal);font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;}
+.btn-add:active{background:var(--teal-lt);}
+
+/* ── FOTOS ── */
+.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.fslot{aspect-ratio:1;border-radius:10px;overflow:hidden;border:1.5px dashed var(--brd);position:relative;cursor:pointer;background:var(--bg);display:grid;place-items:center;}
+.fslot.filled{border-style:solid;border-color:var(--teal);}
+.fslot img{width:100%;height:100%;object-fit:cover;display:block;}
+.fph{text-align:center;padding:8px;}
+.fph .cam{font-size:22px;margin-bottom:3px;}
+.fph span{font-size:10px;color:var(--muted);font-weight:500;display:block;}
+.fdel{position:absolute;top:4px;right:4px;width:22px;height:22px;background:rgba(0,0,0,.55);border:none;border-radius:50%;color:#fff;font-size:11px;cursor:pointer;display:grid;place-items:center;}
+
+/* ── CHECKLIST VISUAL ── */
+.check-item{
+  display:flex;align-items:center;gap:12px;padding:12px 14px;
+  border-radius:10px;border:1.5px solid var(--brd);background:var(--bg);
+  margin-bottom:8px;cursor:pointer;-webkit-user-select:none;user-select:none;transition:all .15s;
+}
+.check-item.chk{border-color:var(--teal);background:var(--teal-lt);}
+.check-box{width:22px;height:22px;border-radius:6px;border:2px solid var(--brd);flex-shrink:0;display:grid;place-items:center;font-size:12px;transition:all .15s;}
+.check-item.chk .check-box{background:var(--teal);border-color:var(--teal);color:#fff;}
+.check-lbl{font-size:13px;font-weight:600;flex:1;}
+.check-sub{font-size:11px;color:var(--muted);}
+
+/* ── RESUMO KPIs ── */
+.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.res-box{padding:12px;background:var(--bg);border-radius:10px;text-align:center;}
+.res-val{font-size:22px;font-weight:800;}
+.res-lbl{font-size:10px;color:var(--muted);font-weight:500;margin-top:2px;}
+
+/* ── BOTTOM BAR ── */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--sur);border-top:1px solid var(--brd);padding:12px 16px;display:flex;gap:10px;box-shadow:0 -4px 20px rgba(0,0,0,.08);}
+.btn-wa{flex:1;padding:14px;border-radius:12px;border:none;background:#25d366;color:#fff;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;}
+.btn-wa:active{background:#1da851;}
+.btn-sv{flex:1;padding:14px;border-radius:12px;border:none;background:var(--teal-dk);color:#fff;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;}
+.btn-sv:active{background:#065f46;}
+
+/* ── MODAL SHEET ── */
+.sh-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;backdrop-filter:blur(3px);}
+.sh-ov.open{display:flex;}
+.sheet{background:var(--sur);border-radius:20px 20px 0 0;padding:22px 20px;width:100%;animation:shup .28s cubic-bezier(.4,0,.2,1);}
+@keyframes shup{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.sh-h{width:40px;height:4px;background:var(--brd);border-radius:99px;margin:0 auto 18px;}
+.sh-title{font-size:17px;font-weight:700;margin-bottom:16px;}
+
+/* ── TOAST ── */
+.toast{position:fixed;top:72px;left:50%;transform:translateX(-50%) translateY(-14px);background:#1e293b;color:#fff;padding:9px 20px;border-radius:99px;font-size:13px;font-weight:600;opacity:0;transition:all .25s;z-index:300;white-space:nowrap;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── ALERT ── */
+.alert{padding:10px 14px;border-radius:9px;font-size:12px;margin-bottom:13px;font-weight:500;}
+.al-amber{background:var(--amber-lt);border-left:3px solid var(--amber);color:#92400e;}
+
+@media(min-width:480px){.content{margin:0 auto;}.bottom-bar{max-width:480px;left:50%;transform:translateX(-50%);}}
+</style>
+  <!-- ══ PWA GeoSistema PRO ══ -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#0dcfb0">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="GeoSistema PRO">
+  <link rel="apple-touch-icon" href="./assets/icon-192.png">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(r => console.log('SW registrado:', r.scope))
+          .catch(e => console.warn('SW falhou:', e));
+      });
+    }
+  </script>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<!-- ── HEADER ── -->
+<div class="app-header">
+  <div class="h-top">
+    <div class="h-logo">
+      <div class="h-icon">🔧</div>
+      <div><div class="h-title">Diário de Manutenção</div><div class="h-sub">GeoSistema PRO</div></div>
+    </div>
+    <div class="h-nav">
+      <a href="Dashboard_obra.html">📓 Obra</a>
+      <a href="Diario_de_Obra_v2.html">🏗️ Dashboard</a>
+      <a href="Dashboard_Manutencao.html">📊 Relatórios</a>
+    </div>
+  </div>
+  <!-- Seletor de edificação -->
+  <div class="edif-bar">
+    <label>Edificação:</label>
+    <select id="edificacaoSelect" onchange="trocarEdificacao(this.value)">
+      <option value="">Selecione a edificação...</option>
+    </select>
+  </div>
+  <div class="step-bar" id="stepBar"></div>
+</div>
+<div class="wave"></div>
+<div class="content" id="mainContent"></div>
+
+<!-- ── BOTTOM BAR ── -->
+<div class="bottom-bar">
+  <button class="btn-wa" onclick="enviarWhats()">📱 WhatsApp</button>
+  <button class="btn-sv" id="btnNext" onclick="avancar()">Próximo →</button>
+</div>
+
+<!-- ── SHEET: ADICIONAR TRABALHADOR ── -->
+<div class="sh-ov" id="shTrab">
+  <div class="sheet">
+    <div class="sh-h"></div>
+    <div class="sh-title">➕ Adicionar Funcionário</div>
+    <div class="fg"><label class="fl">Nome</label><input type="text" id="tNome" placeholder="Nome completo"></div>
+    <div class="fr2">
+      <div class="fg"><label class="fl">Função</label>
+        <select id="tFunc">
+          <option>Eletricista</option><option>Encanador</option><option>Pedreiro</option>
+          <option>Pintor</option><option>Servente</option><option>Técnico</option>
+          <option>Carpinteiro</option><option>Encarregado</option><option>Outro</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Horas</label><input type="number" id="tHoras" value="8" min="1" max="12"></div>
+    </div>
+    <button class="btn-sv" style="width:100%;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:700;margin-top:4px;" onclick="confirmarTrab()">✅ Confirmar</button>
+  </div>
+</div>
+
+<!-- ── SHEET: ADICIONAR MATERIAL ── -->
+<div class="sh-ov" id="shMat">
+  <div class="sheet">
+    <div class="sh-h"></div>
+    <div class="sh-title">📦 Registrar Material</div>
+    <div class="fg"><label class="fl">Descrição do material</label><input type="text" id="mDesc" placeholder="Ex: Lâmpada LED 9W, Cimento 50kg..."></div>
+    <div class="fr2">
+      <div class="fg"><label class="fl">Quantidade</label><input type="number" id="mQtd" value="1" min="1"></div>
+      <div class="fg"><label class="fl">Unidade</label>
+        <select id="mUnid">
+          <option>un</option><option>m</option><option>m²</option><option>kg</option>
+          <option>L</option><option>sc</option><option>rolo</option><option>cx</option>
+        </select>
+      </div>
+    </div>
+    <div class="fr2">
+      <div class="fg"><label class="fl">Valor unit. (R$)</label><input type="number" id="mValor" placeholder="0,00" step="0.01" min="0"></div>
+      <div class="fg"><label class="fl">Status</label>
+        <select id="mStatus">
+          <option value="utilizado">Utilizado</option>
+          <option value="solicitado">Solicitado</option>
+          <option value="faltando">Em Falta</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-sv" style="width:100%;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:700;margin-top:4px;" onclick="confirmarMat()">✅ Adicionar</button>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════
+   DADOS BASE
+════════════════════════════════════════════════ */
+// Lista de bairros/edificações — sincronizados com index.html (mapa.js)
+// Adicionados aqui como fallback; o encarregado seleciona a edificação correta
+const EDIFICACOES = [
+  // ── Simões Filho ─────────────────────────────────────────────
+  { id:'BR_040281',  nome:'Simões Filho — CIA',                         bairro:'CIA',                           codigo:'BR 040281',  cidade:'Simões Filho',    lat:-12.8073, lng:-38.4052 },
+  { id:'BR_04_0767', nome:'Simões Filho — Coroa da Lagoa',              bairro:'Coroa da Lagoa',                codigo:'BR 04 0767', cidade:'Simões Filho',    lat:-12.7814, lng:-38.3967 },
+  { id:'BR_04_2566', nome:'Simões Filho — Covel',                       bairro:'Covel',                         codigo:'BR 04 2566', cidade:'Simões Filho',    lat:-12.7710, lng:-38.4179 },
+  { id:'BR_04_0934', nome:'Simões Filho — Ilha de São João',            bairro:'Ilha de São João',              codigo:'BR 04 0934', cidade:'Simões Filho',    lat:-12.7819, lng:-38.4253 },
+  { id:'BR_04_0533', nome:'Simões Filho — Luiz Eduardo',                bairro:'Luiz Eduardo',                  codigo:'BR 04 0533', cidade:'Simões Filho',    lat:-12.7932, lng:-38.4118 },
+  { id:'BR_04_1760', nome:'Simões Filho — Mapele',                      bairro:'Mapele',                        codigo:'BR 04 1760', cidade:'Simões Filho',    lat:-12.7514, lng:-38.4572 },
+  { id:'BR_04_0480', nome:'Simões Filho — Nova Pitanguinha',            bairro:'Nova Pitanguinha',              codigo:'BR 04 0480', cidade:'Simões Filho',    lat:-12.7921, lng:-38.3918 },
+  { id:'BR_04_1732', nome:'Simões Filho — Palmares',                    bairro:'Palmares',                      codigo:'BR 04 1732', cidade:'Simões Filho',    lat:-12.7699, lng:-38.4062 },
+  { id:'BR_04_2372', nome:'Simões Filho — Ponto Parada',                bairro:'Ponto Parada',                  codigo:'BR 04 2372', cidade:'Simões Filho',    lat:-12.7734, lng:-38.4259 },
+  { id:'BR_04_1613', nome:'Simões Filho — Santo Antônio Rios das Pedras', bairro:'Santo Antônio Rios das Pedras', codigo:'BR 04 1613', cidade:'Simões Filho', lat:-12.8016, lng:-38.4021 },
+  { id:'BR_04_2139', nome:'Simões Filho — Simões Filho 1',              bairro:'Simões Filho 1',                codigo:'BR 04 2139', cidade:'Simões Filho',    lat:-12.7882, lng:-38.4010 },
+  // ── Lauro de Freitas ─────────────────────────────────────────
+  { id:'BR_04_1466', nome:'Lauro de Freitas — Areia Branca',            bairro:'Areia Branca',                  codigo:'BR 04 1466', cidade:'Lauro de Freitas', lat:-12.8847, lng:-38.3325 },
+  { id:'BR_04_1599', nome:'Lauro de Freitas — Caic',                    bairro:'Caic',                          codigo:'BR 04 1599', cidade:'Lauro de Freitas', lat:-12.8842, lng:-38.3177 },
+  { id:'BR_04_0475', nome:'Lauro de Freitas — Itinga',                  bairro:'Itinga',                        codigo:'BR 04 0475', cidade:'Lauro de Freitas', lat:-12.8913, lng:-38.3269 },
+  { id:'BR_04_1176', nome:'Lauro de Freitas — Pq São Paulo',            bairro:'Pq São Paulo',                  codigo:'BR 04 1176', cidade:'Lauro de Freitas', lat:-12.8801, lng:-38.3354 },
+  { id:'BR_04_1103', nome:'Lauro de Freitas — Portão',                  bairro:'Portão',                        codigo:'BR 04 1103', cidade:'Lauro de Freitas', lat:-12.9025, lng:-38.3338 },
+  { id:'BR_04_1055', nome:'Lauro de Freitas — Praia de Ipitanga',       bairro:'Praia de Ipitanga',             codigo:'BR 04 1055', cidade:'Lauro de Freitas', lat:-12.9058, lng:-38.3416 },
+  { id:'BR_04_1806', nome:'Lauro de Freitas — Vida Nova',               bairro:'Vida Nova',                     codigo:'BR 04 1806', cidade:'Lauro de Freitas', lat:-12.8816, lng:-38.3202 },
+];
+
+// Serviços padrão do sistema (espelhados do index.html)
+const SERVICOS_PADRAO = [
+  { id:'lampadas',   ico:'💡', lbl:'Troca de Lâmpadas',    cat:'elétrica' },
+  { id:'hidraulico', ico:'🚿', lbl:'Reparo Hidráulico',     cat:'hidráulica' },
+  { id:'calhas',     ico:'🏗️', lbl:'Limpeza de Calhas',     cat:'cobertura' },
+  { id:'telhado',    ico:'🏠', lbl:'Reparo no Telhado',     cat:'cobertura' },
+  { id:'pintura',    ico:'🖌️', lbl:'Pintura / Reparo',      cat:'acabamento' },
+  { id:'eletrica',   ico:'⚡', lbl:'Instalação Elétrica',   cat:'elétrica' },
+  { id:'alvenaria',  ico:'🧱', lbl:'Alvenaria / Reboco',    cat:'estrutura' },
+  { id:'vidros',     ico:'🪟', lbl:'Vidros / Esquadrias',   cat:'acabamento' },
+  { id:'limpeza',    ico:'🧹', lbl:'Limpeza Geral',         cat:'geral' },
+  { id:'jardim',     ico:'🌿', lbl:'Jardinagem',             cat:'externo' },
+  { id:'sanitario',  ico:'🚽', lbl:'Sanitários',            cat:'hidráulica' },
+  { id:'acessib',    ico:'♿', lbl:'Acessibilidade',         cat:'estrutura' },
+];
+
+/* ════════════════════════════════════════════════
+   LS HELPER (mesmo padrão do sistema)
+════════════════════════════════════════════════ */
+const LS={
+  get:(k,fb=null)=>{try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):fb;}catch{return fb;}},
+  set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true;}catch{return false;}}
+};
+
+function getEdifAtiva(){return LS.get('geo_man_edif_ativa', 'BR_040281');}
+function lsEdif(chave){return chave+'_edif_'+getEdifAtiva();}
+function getEdifInfo(){
+  const todas = [...EDIFICACOES, ...LS.get('geo_man_edificacoes_extras',[])];
+  return todas.find(e=>e.id===getEdifAtiva())||todas[0];
+}
+
+/* ════════════════════════════════════════════════
+   ESTADO DA SESSÃO
+════════════════════════════════════════════════ */
+let step = 0;
+const STEPS = 5;
+const S = {
+  data: new Date().toLocaleDateString('pt-BR'),
+  encarregado: '',
+  edificacaoId: getEdifAtiva(),
+  clima: '☀️ Ensolarado',
+  obs: '',
+  // serviços selecionados com status cada um
+  servicos: [],         // [{id, nome, status, obs}]
+  // materiais usados
+  materiais: [],        // [{desc, qtd, unid, valor, status}]
+  // mão de obra
+  trabalhadores: [],
+  // fotos
+  fotos: [],
+  // ocorrências / problemas
+  ocorrencias: [],
+  ocGrav: '',
+  ocDesc: '',
+  // urgência da situação geral
+  urgencia: 'Normal',
+  // apontamentos (área de risco, sem recuo, etc)
+  apontamentos: [],
+};
+let FF = -1;
+
+const SNOMES = ['Identificação','Serviços','Equipe','Fotos','Ocorrências'];
+
+/* ════════════════════════════════════════════════
+   SELETOR DE EDIFICAÇÃO
+════════════════════════════════════════════════ */
+function popularEdifSelect(){
+  const sel = document.getElementById('edificacaoSelect');
+  if(!sel) return;
+  const todas = [...EDIFICACOES, ...LS.get('geo_man_edificacoes_extras',[])];
+  const ativa = getEdifAtiva();
+  // Agrupar por cidade
+  const sf = todas.filter(e=>e.cidade==='Simões Filho');
+  const lf = todas.filter(e=>e.cidade==='Lauro de Freitas');
+  const outros = todas.filter(e=>e.cidade!=='Simões Filho'&&e.cidade!=='Lauro de Freitas');
+  function optGroup(label, lista){
+    if(!lista.length) return '';
+    return `<optgroup label="${label}">`+
+      lista.map(e=>`<option value="${e.id}" ${e.id===ativa?'selected':''}>${e.codigo} — ${e.bairro}</option>`).join('')+
+      '</optgroup>';
+  }
+  sel.innerHTML = '<option value="">Selecione a edificação...</option>' +
+    optGroup('Simões Filho', sf) +
+    optGroup('Lauro de Freitas', lf) +
+    (outros.length ? optGroup('Outros', outros) : '');
+  S.edificacaoId = ativa;
+}
+
+function trocarEdificacao(id){
+  if(!id) return;
+  LS.set('geo_man_edif_ativa', id);
+  S.edificacaoId = id;
+  showT('Edificação: '+getEdifInfo()?.nome);
+}
+
+/* ════════════════════════════════════════════════
+   STEP BAR
+════════════════════════════════════════════════ */
+function updateBar(){
+  document.getElementById('stepBar').innerHTML = SNOMES.map((n,i)=>
+    `<div class="si"><div class="sl ${i<step?'done':i===step?'active':''}"></div>
+     <div class="slbl ${i===step?'active':''}">${n}</div></div>`
+  ).join('');
+  document.getElementById('btnNext').textContent = step===STEPS-1?'✅ Concluir':'Próximo →';
+}
+
+function render(){
+  updateBar();
+  const c = document.getElementById('mainContent');
+  c.innerHTML = '';
+  [rIdent, rServicos, rEquipe, rFotos, rOcorrencias][step](c);
+}
+
+/* ════════════════════════════════════════════════
+   STEP 0 — IDENTIFICAÇÃO
+════════════════════════════════════════════════ */
+function rIdent(c){
+  const edif = getEdifInfo();
+  c.innerHTML = `
+  <div class="sc">
+    <div class="sc-h"><div class="sc-ico it">📋</div>
+      <div><div class="sc-title">Identificação do Serviço</div><div class="sc-sub">Dados do encarregado e local</div></div></div>
+    <div class="sc-b">
+      <div class="fg"><label class="fl">Encarregado / Responsável</label>
+        <input id="g_enc" value="${S.encarregado}" placeholder="Nome do responsável pelo serviço"></div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">Data do serviço</label>
+          <input type="date" id="g_data" value="${toInputDate(S.data)}"></div>
+        <div class="fg"><label class="fl">Clima</label>
+          <select id="g_cli">
+            <option>☀️ Ensolarado</option><option>⛅ Nublado</option>
+            <option>🌧️ Chuva leve</option><option>⛈️ Chuva forte</option>
+          </select>
+        </div>
+      </div>
+      ${edif ? `<div class="alert al-amber">📍 Edificação: <strong>${edif.codigo} — ${edif.nome}</strong> · Bairro: ${edif.bairro}</div>` : ''}
+      <div class="fg"><label class="fl">Nível de urgência da situação</label>
+        <div class="urg-grid">
+          <div class="urg-btn urg-normal ${S.urgencia==='Normal'?'sel':''}" onclick="setUrg('Normal')">🟢 Normal</div>
+          <div class="urg-btn urg-atencao ${S.urgencia==='Atenção'?'sel':''}" onclick="setUrg('Atenção')">🟡 Atenção</div>
+          <div class="urg-btn urg-urgente ${S.urgencia==='Urgente'?'sel':''}" onclick="setUrg('Urgente')">🔴 Urgente</div>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Observações gerais</label>
+        <textarea id="g_obs" rows="3" placeholder="Situação geral da edificação hoje...">${S.obs}</textarea></div>
+    </div>
+  </div>`;
+  document.getElementById('g_cli').value = S.clima;
+}
+function toInputDate(d){
+  if(!d) return '';
+  const p = d.split('/');
+  if(p.length===3) return p[2]+'-'+p[1]+'-'+p[0];
+  return d;
+}
+function setUrg(v){ S.urgencia=v; rIdent(document.getElementById('mainContent')); }
+function svIdent(){
+  S.encarregado = document.getElementById('g_enc')?.value||S.encarregado;
+  const datVal  = document.getElementById('g_data')?.value;
+  if(datVal){ const p=datVal.split('-'); S.data=p[2]+'/'+p[1]+'/'+p[0]; }
+  S.clima   = document.getElementById('g_cli')?.value||S.clima;
+  S.obs     = document.getElementById('g_obs')?.value||S.obs;
+}
+
+/* ════════════════════════════════════════════════
+   STEP 1 — SERVIÇOS
+════════════════════════════════════════════════ */
+function rServicos(c){
+  const selecionados = S.servicos.map(s=>s.id);
+  const itensServico = S.servicos.map((sv,i) => {
+    return `<div class="sc" style="margin-bottom:10px;animation:none;">
+      <div class="sc-h" style="padding:10px 14px;">
+        <div class="sc-ico it" style="font-size:15px;">${SERVICOS_PADRAO.find(x=>x.id===sv.id)?.ico||'🔧'}</div>
+        <div style="flex:1;"><div class="sc-title" style="font-size:13px;">${sv.nome}</div></div>
+        <button style="background:var(--red-lt);border:none;border-radius:7px;color:var(--red);padding:4px 8px;font-size:11px;cursor:pointer;font-weight:700;" onclick="remServ(${i})">✕</button>
+      </div>
+      <div class="sc-b" style="padding:12px 14px;">
+        <label class="fl" style="margin-bottom:6px;">Status</label>
+        <div class="status-grid">
+          <div class="status-btn st-concluido ${sv.status==='concluido'?'sel':''}" onclick="setServStatus(${i},'concluido')">✅ Concluído</div>
+          <div class="status-btn st-parcial ${sv.status==='parcial'?'sel':''}" onclick="setServStatus(${i},'parcial')">⚡ Parcial</div>
+          <div class="status-btn st-aguardando ${sv.status==='aguardando'?'sel':''}" onclick="setServStatus(${i},'aguardando')">⏳ Aguardando</div>
+          <div class="status-btn st-nao ${sv.status==='nao_realizado'?'sel':''}" onclick="setServStatus(${i},'nao_realizado')">❌ Não feito</div>
+        </div>
+        <textarea placeholder="Observação deste serviço..." rows="2"
+          style="font-size:12px;margin-top:8px;"
+          oninput="setServObs(${i},this.value)">${sv.obs||''}</textarea>
+      </div>
+    </div>`;
+  }).join('');
+
+  const grid = SERVICOS_PADRAO.map(s=>`
+    <div class="serv-btn ${selecionados.includes(s.id)?'sel':''}" onclick="togServ('${s.id}')">
+      <span class="sb-ico">${s.ico}</span>
+      <span class="sb-lbl">${s.lbl}</span>
+    </div>`).join('');
+
+  c.innerHTML = `
+  <div class="sc">
+    <div class="sc-h"><div class="sc-ico it">🔧</div>
+      <div><div class="sc-title">Serviços Executados</div>
+        <div class="sc-sub">${S.servicos.length} serviço(s) selecionado(s)</div></div></div>
+    <div class="sc-b">
+      <label class="fl" style="margin-bottom:8px;">Selecione os serviços do dia</label>
+      <div class="serv-grid">${grid}</div>
+      <div class="fg"><label class="fl">Descrição geral dos serviços</label>
+        <textarea id="serv_desc" rows="3" placeholder="Detalhe o que foi feito, materiais utilizados, área coberta...">${S.servicosDesc||''}</textarea>
+      </div>
+    </div>
+  </div>
+  ${itensServico ? `<div style="margin-top:2px;">${itensServico}</div>` : ''}`;
+}
+
+function togServ(id){
+  const idx = S.servicos.findIndex(s=>s.id===id);
+  if(idx===-1){
+    const sp = SERVICOS_PADRAO.find(x=>x.id===id);
+    S.servicos.push({id, nome:sp?.lbl||id, status:'concluido', obs:''});
+  } else {
+    S.servicos.splice(idx,1);
+  }
+  svServicos();
+  rServicos(document.getElementById('mainContent'));
+}
+function remServ(i){ S.servicos.splice(i,1); svServicos(); rServicos(document.getElementById('mainContent')); }
+function setServStatus(i,v){ S.servicos[i].status=v; rServicos(document.getElementById('mainContent')); }
+function setServObs(i,v){ S.servicos[i].obs=v; }
+function svServicos(){ S.servicosDesc = document.getElementById('serv_desc')?.value||S.servicosDesc||''; }
+
+/* ════════════════════════════════════════════════
+   STEP 2 — EQUIPE + MATERIAIS
+════════════════════════════════════════════════ */
+function rEquipe(c){
+  const tot = S.trabalhadores.reduce((s,t)=>s+(parseFloat(t.horas)||0),0);
+  const custoMat = S.materiais.reduce((s,m)=>s+((parseFloat(m.valor)||0)*(parseFloat(m.qtd)||1)),0);
+  const lista = S.trabalhadores.map((t,i)=>`
+    <div class="mdo-item">
+      <div class="mdo-av">👷</div>
+      <div style="flex:1;"><div class="mdo-nome">${t.nome}</div><div class="mdo-func">${t.funcao}</div></div>
+      <span class="mdo-h">${t.horas}h</span>
+      <button class="btn-rm" onclick="rmT(${i})">✕</button>
+    </div>`).join('') || `<p style="text-align:center;color:var(--muted);font-size:13px;padding:10px 0;">Nenhum funcionário.</p>`;
+
+  const matLista = S.materiais.map((m,i)=>`
+    <div class="mat-item">
+      <div class="mat-desc">
+        <div style="font-size:13px;font-weight:600;">${m.desc}</div>
+        <div style="font-size:11px;color:var(--muted);">${m.qtd} ${m.unid} · R$ ${(parseFloat(m.valor)||0).toFixed(2)} · <span style="color:${m.status==='faltando'?'var(--red)':m.status==='solicitado'?'var(--amber)':'var(--green)'};">${m.status}</span></div>
+      </div>
+      <button class="btn-rm" onclick="rmMat(${i})">✕</button>
+    </div>`).join('') || `<p style="text-align:center;color:var(--muted);font-size:12px;padding:8px 0;">Nenhum material registrado.</p>`;
+
+  c.innerHTML = `
+  <div class="sc">
+    <div class="sc-h"><div class="sc-ico ia">👷</div>
+      <div><div class="sc-title">Equipe de Manutenção</div>
+        <div class="sc-sub">${S.trabalhadores.length} funcionário(s) · ${tot}h totais</div></div></div>
+    <div class="sc-b">
+      ${lista}
+      <button class="btn-add" onclick="abrirShTrab()">➕ Adicionar funcionário</button>
+      ${tot>0?`<div style="margin-top:10px;padding:10px 14px;background:var(--blue-lt);border-radius:10px;font-size:12px;color:var(--blue);font-weight:600;">📊 ${S.trabalhadores.length} funcionário(s) · ${tot}h-homem</div>`:''}
+    </div>
+  </div>
+  <div class="sc">
+    <div class="sc-h"><div class="sc-ico io">📦</div>
+      <div><div class="sc-title">Materiais Utilizados</div>
+        <div class="sc-sub">${S.materiais.length} item(ns) · Total: R$ ${custoMat.toFixed(2)}</div></div></div>
+    <div class="sc-b">
+      ${matLista}
+      <button class="btn-add-mat" onclick="abrirShMat()">➕ Registrar material</button>
+    </div>
+  </div>`;
+}
+function rmT(i){ S.trabalhadores.splice(i,1); rEquipe(document.getElementById('mainContent')); }
+function rmMat(i){ S.materiais.splice(i,1); rEquipe(document.getElementById('mainContent')); }
+function abrirShTrab(){ document.getElementById('tNome').value=''; document.getElementById('tHoras').value='8'; document.getElementById('shTrab').classList.add('open'); setTimeout(()=>document.getElementById('tNome').focus(),280); }
+function fecharShTrab(){ document.getElementById('shTrab').classList.remove('open'); }
+document.getElementById('shTrab').addEventListener('click',e=>{if(e.target===e.currentTarget)fecharShTrab();});
+function confirmarTrab(){
+  const n=document.getElementById('tNome').value.trim();
+  if(!n){showT('⚠️ Informe o nome');return;}
+  S.trabalhadores.push({nome:n,funcao:document.getElementById('tFunc').value,horas:document.getElementById('tHoras').value});
+  fecharShTrab();rEquipe(document.getElementById('mainContent'));
+}
+function abrirShMat(){ document.getElementById('mDesc').value=''; document.getElementById('mQtd').value='1'; document.getElementById('mValor').value=''; document.getElementById('shMat').classList.add('open'); setTimeout(()=>document.getElementById('mDesc').focus(),280); }
+function fecharShMat(){ document.getElementById('shMat').classList.remove('open'); }
+document.getElementById('shMat').addEventListener('click',e=>{if(e.target===e.currentTarget)fecharShMat();});
+function confirmarMat(){
+  const d=document.getElementById('mDesc').value.trim();
+  if(!d){showT('⚠️ Informe a descrição');return;}
+  S.materiais.push({
+    desc:d, qtd:document.getElementById('mQtd').value,
+    unid:document.getElementById('mUnid').value,
+    valor:document.getElementById('mValor').value||'0',
+    status:document.getElementById('mStatus').value
+  });
+  fecharShMat(); rEquipe(document.getElementById('mainContent'));
+}
+
+/* ════════════════════════════════════════════════
+   STEP 3 — FOTOS
+════════════════════════════════════════════════ */
+function rFotos(c){
+  const cats = ['Fachada','Área interna','Serviço executado','Problema encontrado','Antes','Depois'];
+  const slots = S.fotos.map((f,i)=>`
+    <div class="fslot filled">
+      <img src="${f.base64}" alt="">
+      <button class="fdel" onclick="rmF(${i})">✕</button>
+    </div>`).join('');
+  const add = S.fotos.length<12?`<div class="fslot" onclick="document.getElementById('fInp').click()">
+    <div class="fph"><div class="cam">📷</div><span>Adicionar</span></div></div>`:'';
+  c.innerHTML = `
+  <div class="sc">
+    <div class="sc-h"><div class="sc-ico it">📷</div>
+      <div><div class="sc-title">Registro Fotográfico</div><div class="sc-sub">${S.fotos.length}/12 fotos</div></div></div>
+    <div class="sc-b">
+      <div class="fgrid">${slots}${add}</div>
+      <input type="file" id="fInp" accept="image/*" multiple style="display:none" onchange="addF(this)">
+      <p style="font-size:11px;color:var(--muted);margin-top:10px;text-align:center;">Fotografe o antes/depois, serviços executados e problemas encontrados</p>
+    </div>
+  </div>`;
+}
+function rmF(i){ S.fotos.splice(i,1); rFotos(document.getElementById('mainContent')); }
+function addF(inp){
+  const fs=Array.from(inp.files).slice(0,12-S.fotos.length);
+  Promise.all(fs.map(compImg)).then(res=>{
+    res.forEach(b64=>S.fotos.push({base64:b64,data:S.data}));
+    rFotos(document.getElementById('mainContent'));
+    showT('✅ '+res.length+' foto(s) adicionada(s)');
+  });
+}
+function compImg(f){
+  return new Promise(res=>{
+    const r=new FileReader();r.readAsDataURL(f);
+    r.onload=e=>{const img=new Image();img.src=e.target.result;img.onload=()=>{
+      const cv=document.createElement('canvas'),M=900;let w=img.width,h=img.height;
+      if(w>M){h=h*M/w;w=M;}cv.width=w;cv.height=h;
+      cv.getContext('2d').drawImage(img,0,0,w,h);res(cv.toDataURL('image/jpeg',.65));
+    };};
+  });
+}
+
+/* ════════════════════════════════════════════════
+   STEP 4 — OCORRÊNCIAS + RESUMO
+════════════════════════════════════════════════ */
+function rOcorrencias(c){
+  const oco = S.ocorrencias;
+  function oBtn(v,cls,lbl){const s=oco.includes(v);return`<div class="serv-btn ${s?cls:''}" onclick="togOco('${v}','${cls}')" style="border-radius:9px;padding:10px 8px;">${lbl}</div>`;}
+  function gBtn(v,gCls,lbl){const s=S.ocGrav===v;return`<div class="urg-btn ${gCls} ${s?'sel':''}" onclick="setOcGrav('${v}')">${lbl}</div>`;}
+
+  const edif = getEdifInfo();
+  const custoMat = S.materiais.reduce((s,m)=>s+((parseFloat(m.valor)||0)*(parseFloat(m.qtd)||1)),0);
+  const concluidos = S.servicos.filter(s=>s.status==='concluido').length;
+  const pfis = S.servicos.length ? Math.round(concluidos/S.servicos.length*100) : 0;
+
+  const apontChecks = [
+    {v:'Área de risco',      lbl:'⚠️ Área de risco',       sub:'Risco imediato à segurança'},
+    {v:'Sem recuo lateral',  lbl:'📐 Sem recuo lateral',   sub:'Irregularidade construtiva'},
+    {v:'Sem recuo de fundo', lbl:'📏 Sem recuo de fundo',  sub:'Irregularidade construtiva'},
+    {v:'Infiltração',        lbl:'💧 Infiltração',          sub:'Umidade / vazamento'},
+    {v:'Rachadura',          lbl:'🧱 Rachadura',            sub:'Problema estrutural'},
+  ];
+
+  const apList = apontChecks.map(a=>`
+    <div class="check-item ${S.apontamentos.includes(a.v)?'chk':''}" onclick="togAp('${a.v}')">
+      <div class="check-box">${S.apontamentos.includes(a.v)?'✓':''}</div>
+      <div><div class="check-lbl">${a.lbl}</div><div class="check-sub">${a.sub}</div></div>
+    </div>`).join('');
+
+  c.innerHTML = `
+  <div class="sc">
+    <div class="sc-h"><div class="sc-ico ir">⚠️</div>
+      <div><div class="sc-title">Apontamentos e Ocorrências</div><div class="sc-sub">Registre problemas encontrados</div></div></div>
+    <div class="sc-b">
+      ${apList}
+      <label class="fl" style="margin:10px 0 8px;">Ocorrências durante o serviço</label>
+      <div class="serv-grid">
+        ${oBtn('Falta de material','serv-btn sel','📦 Falta de material')}
+        ${oBtn('Falta de ferramenta','serv-btn sel','🔧 Falta de ferramenta')}
+        ${oBtn('Acidente no trabalho','serv-btn sel','🩹 Acidente')}
+        ${oBtn('Serviço bloqueado','serv-btn sel','🚧 Bloqueado')}
+        ${oBtn('Intervenção elétrica','serv-btn sel','⚡ Elétrica')}
+        ${oBtn('Sem ocorrências','serv-btn sel','✅ Sem ocorrências')}
+      </div>
+      ${oco.length && !oco.includes('Sem ocorrências') ? `
+        <label class="fl" style="margin-bottom:8px;">Gravidade</label>
+        <div class="urg-grid">
+          ${gBtn('Leve','urg-normal','🟢 Leve')}
+          ${gBtn('Médio','urg-atencao','🟡 Médio')}
+          ${gBtn('Grave','urg-urgente','🔴 Grave')}
+        </div>` : ''}
+      <div class="fg" style="margin-top:10px;">
+        <label class="fl">Descrição / Ação tomada</label>
+        <textarea id="oc_desc" rows="3" placeholder="Descreva o problema e a ação tomada...">${S.ocDesc}</textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="sc" style="border-color:rgba(13,207,176,.3);">
+    <div class="sc-h"><div class="sc-ico it">📊</div>
+      <div><div class="sc-title">Resumo do Diário</div><div class="sc-sub">Pronto para enviar</div></div></div>
+    <div class="sc-b">
+      <div class="res-grid">
+        <div class="res-box"><div class="res-val" style="color:var(--teal);">${S.servicos.length}</div><div class="res-lbl">Serviços</div></div>
+        <div class="res-box"><div class="res-val" style="color:var(--green);">${concluidos}</div><div class="res-lbl">Concluídos</div></div>
+        <div class="res-box"><div class="res-val" style="color:var(--amber);">${S.trabalhadores.length}</div><div class="res-lbl">Funcionários</div></div>
+        <div class="res-box"><div class="res-val" style="color:var(--blue);">${S.fotos.length}</div><div class="res-lbl">Fotos</div></div>
+      </div>
+      ${S.materiais.length?`<div style="padding:8px 14px;background:var(--orange-lt);border-radius:10px;font-size:12px;color:var(--orange);font-weight:600;margin-bottom:10px;">📦 ${S.materiais.length} material(is) · R$ ${custoMat.toFixed(2)}</div>`:''}
+      ${oco.length && !oco.includes('Sem ocorrências')?`<div style="padding:8px 14px;background:var(--red-lt);border-radius:10px;font-size:12px;color:var(--red);font-weight:600;margin-bottom:10px;">⚠️ ${oco.length} ocorrência(s) · ${S.ocGrav||'gravidade não definida'}</div>`:''}
+      <div style="padding:10px 14px;background:var(--teal-lt);border-radius:10px;font-size:12px;color:#065f46;font-weight:600;">
+        ✅ ${S.encarregado||'—'} · ${S.clima} · ${S.data}<br>
+        📍 ${edif?.nome||'—'} · Urgência: ${S.urgencia}<br>
+        🏗️ Conclusão dos serviços: ${pfis}%
+      </div>
+    </div>
+  </div>`;
+}
+
+function togOco(v,cls){
+  const i=S.ocorrencias.indexOf(v);
+  if(i===-1)S.ocorrencias.push(v);else S.ocorrencias.splice(i,1);
+  svOco();rOcorrencias(document.getElementById('mainContent'));
+}
+function setOcGrav(v){S.ocGrav=v;svOco();rOcorrencias(document.getElementById('mainContent'));}
+function togAp(v){
+  const i=S.apontamentos.indexOf(v);
+  if(i===-1)S.apontamentos.push(v);else S.apontamentos.splice(i,1);
+  rOcorrencias(document.getElementById('mainContent'));
+}
+function svOco(){ S.ocDesc = document.getElementById('oc_desc')?.value||S.ocDesc; }
+
+/* ════════════════════════════════════════════════
+   NAVEGAÇÃO
+════════════════════════════════════════════════ */
+function svStep(){
+  if(step===0) svIdent();
+  if(step===1) svServicos();
+  if(step===4) svOco();
+}
+function avancar(){
+  svStep();
+  if(step<STEPS-1){step++;render();window.scrollTo({top:0,behavior:'smooth'});}
+  else concluir();
+}
+
+/* ════════════════════════════════════════════════
+   TOAST
+════════════════════════════════════════════════ */
+function showT(m){
+  const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+/* ════════════════════════════════════════════════
+   EXPORTAR JSON — compatível com Dashboard_Manutencao
+════════════════════════════════════════════════ */
+function mkJSON(){
+  const edif = getEdifInfo();
+  const concluidos = S.servicos.filter(s=>s.status==='concluido').length;
+  const ts = new Date().toISOString();
+  return {
+    // ── campos compatíveis com Dashboard_Manutencao (lê v.bairro, v.nivelUrgencia, etc.)
+    tipo:               'diario_manutencao',
+    id:                 'man_'+Date.now(),
+    data:               S.data,
+    bairro:             edif?.bairro||'',
+    codigoEdificacao:   edif?.codigo||S.edificacaoId,
+    edificacaoNome:     edif?.nome||'',
+    edificacaoId:       S.edificacaoId,
+    nivelUrgencia:      S.urgencia,
+    responsavel:        S.encarregado,
+    encarregado:        S.encarregado,
+    clima:              S.clima,
+    observacoes:        S.obs,
+    // ── serviços — campo 'servico' é o array simples esperado por Dashboard_Manutencao
+    servico:            S.servicos.map(s=>s.nome),
+    servicosDetalhados: S.servicos,
+    servicoExecutado:   S.servicosDesc||S.servicos.filter(s=>s.obs).map(s=>s.obs).join(' | '),
+    pctConclusao:       S.servicos.length ? Math.round(concluidos/S.servicos.length*100) : 0,
+    // ── materiais
+    materiais:          S.materiais,
+    custoMateriais:     S.materiais.reduce((s,m)=>s+((parseFloat(m.valor)||0)*(parseFloat(m.qtd)||1)),0),
+    // ── equipe
+    trabalhadores:      S.trabalhadores,
+    totalHH:            S.trabalhadores.reduce((s,t)=>s+(parseFloat(t.horas)||0),0),
+    // ── fotos (base64)
+    fotosManutencao:    S.fotos.map(f=>f.base64),
+    totalFotos:         S.fotos.length,
+    // ── apontamentos — campo esperado por Dashboard_Manutencao
+    apontamento:        S.apontamentos,
+    apontamentos:       S.apontamentos,
+    // ── ocorrências
+    ocorrencias:        S.ocorrencias,
+    ocGravidade:        S.ocGrav,
+    ocDescricao:        S.ocDesc,
+    geradoEm:           ts,
+  };
+}
+
+function concluir(){
+  svStep();
+  const d = mkJSON();
+  // Salva histórico no localStorage (chave por edificação)
+  try{
+    const key = lsEdif('geo_manutencao');
+    let h = LS.get(key,[]);
+    h.push(d);
+    LS.set(key, h);
+    // Também salva na chave global para Dashboard_Manutencao poder ler via localStorage
+    let hGlobal = LS.get('geo_manutencao_diarios',[]);
+    hGlobal.push(d);
+    LS.set('geo_manutencao_diarios', hGlobal);
+  }catch(e){}
+  compartilhar(d);
+}
+
+function enviarWhats(){ svStep(); compartilhar(mkJSON()); }
+
+function compartilhar(d){
+  const blob = new Blob([JSON.stringify([d],null,2)],{type:'application/json'});
+  const file = new File([blob],`Manutencao_${d.codigoEdificacao}_${S.data.replace(/\//g,'_')}.json`,{type:'application/json'});
+  if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+    navigator.share({files:[file],title:'🔧 Diário de Manutenção — GeoSistema PRO'})
+      .catch(e=>{if(e.name!=='AbortError')baixar(blob,file.name);});
+  }else{
+    baixar(blob,file.name);
+    showT('📥 Arquivo exportado! Anexe no WhatsApp.');
+  }
+}
+function baixar(b,n){
+  const u=URL.createObjectURL(b),a=document.createElement('a');
+  a.href=u;a.download=n;document.body.appendChild(a);a.click();
+  document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(u),5000);
+}
+
+/* ════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════ */
+popularEdifSelect();
+render();
+</script>
+</body>
+</html>

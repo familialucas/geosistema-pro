@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoSistema PRO — Dashboard Financeiro</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:       #0d1117;
+  --s1:       #161b22;
+  --s2:       #1c2330;
+  --border:   #30363d;
+  --blue:     #1a73e8;
+  --teal:     #0dcfb0;
+  --amber:    #f5a623;
+  --red:      #ef4444;
+  --green:    #22c55e;
+  --purple:   #a78bfa;
+  --text:     #e6edf3;
+  --muted:    #8b949e;
+  --r:        10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* ══ HEADER UNIFICADO ══ */
+header{background:rgba(13,17,23,.97);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0;}
+.logo-icon{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#1a73e8,#0dcfb0);display:grid;place-items:center;font-size:17px;}
+.logo-name{font-family:'DM Serif Display',serif;font-size:17px;color:var(--text);}
+.logo-sub{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;}
+.header-sep{width:1px;height:28px;background:var(--border);margin:0 4px;flex-shrink:0;}
+
+/* NAV PÁGINAS (navegação entre dashboards) */
+.nav-pages{display:flex;gap:4px;}
+.np{padding:6px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;font-family:'Sora',sans-serif;cursor:pointer;transition:all .15s;font-weight:500;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
+.np:hover{border-color:var(--blue);color:var(--blue);}
+.np.active-page{background:rgba(26,115,232,.15);border-color:var(--blue);color:var(--blue);}
+
+/* NAV TABS (abas internas) */
+.header-sep2{width:1px;height:28px;background:var(--border);margin:0 4px;flex-shrink:0;}
+nav.tabs{display:flex;gap:4px;}
+.nb{padding:6px 13px;border-radius:6px;border:1px solid transparent;background:transparent;color:var(--muted);font-size:12px;font-family:'Sora',sans-serif;cursor:pointer;transition:all .15s;font-weight:500;}
+.nb:hover,.nb.active{background:var(--blue);border-color:var(--blue);color:#fff;}
+
+.header-badge{margin-left:auto;background:rgba(245,166,35,.12);color:var(--amber);border:1px solid rgba(245,166,35,.25);border-radius:20px;font-size:10px;padding:3px 11px;font-weight:600;white-space:nowrap;flex-shrink:0;}
+
+/* Indicador de sincronização */
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--border);flex-shrink:0;transition:background .3s;}
+.sync-dot.ok{background:var(--green);box-shadow:0 0 6px var(--green);}
+.sync-dot.warn{background:var(--amber);box-shadow:0 0 6px var(--amber);}
+.sync-label{font-size:10px;color:var(--muted);white-space:nowrap;}
+
+/* ══ MAIN ══ */
+main{padding:22px 26px;max-width:1480px;margin:0 auto;}
+
+/* TOP BAR */
+.top-bar{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+.page-title h2{font-family:'DM Serif Display',serif;font-size:24px;}
+.page-title p{color:var(--muted);font-size:13px;margin-top:3px;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+.btn-p{padding:9px 18px;background:var(--blue);border:none;border-radius:8px;color:#fff;font-family:'Sora',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s;}
+.btn-p:hover{background:#1558b0;}
+.btn-o{padding:9px 18px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'Sora',sans-serif;font-size:12px;cursor:pointer;transition:all .2s;}
+.btn-o:hover{border-color:var(--blue);color:var(--blue);}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:13px;margin-bottom:20px;}
+.kpi{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:16px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s;}
+.kpi:hover{transform:translateY(-2px);border-color:var(--blue);}
+.kpi::after{content:'';position:absolute;inset:0;opacity:.05;background:radial-gradient(circle at top left,currentColor,transparent 70%);}
+.kpi.c-blue{color:var(--blue);}
+.kpi.c-green{color:var(--green);}
+.kpi.c-amber{color:var(--amber);}
+.kpi.c-red{color:var(--red);}
+.kpi.c-teal{color:var(--teal);}
+.kpi.c-purple{color:var(--purple);}
+.kpi-icon{font-size:19px;margin-bottom:7px;}
+.kpi-val{font-size:24px;font-weight:700;line-height:1;color:var(--text);}
+.kpi-val.small{font-size:18px;}
+.kpi-lbl{font-size:11px;color:var(--muted);margin-top:5px;font-weight:500;letter-spacing:.3px;}
+.kpi-sub{font-size:11px;margin-top:3px;font-family:'DM Mono',monospace;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.kpi{animation:fadeUp .4s ease both;}
+.kpi:nth-child(1){animation-delay:.04s;}.kpi:nth-child(2){animation-delay:.08s;}.kpi:nth-child(3){animation-delay:.12s;}.kpi:nth-child(4){animation-delay:.16s;}.kpi:nth-child(5){animation-delay:.20s;}.kpi:nth-child(6){animation-delay:.24s;}.kpi:nth-child(7){animation-delay:.28s;}
+
+/* GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+.g13{display:grid;grid-template-columns:1fr 2.2fr;gap:16px;margin-bottom:16px;}
+.g31{display:grid;grid-template-columns:2.2fr 1fr;gap:16px;margin-bottom:16px;}
+@media(max-width:1000px){.g2,.g3,.g13,.g31{grid-template-columns:1fr;}}
+
+/* CARD */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.card-h{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.card-title{font-size:13px;font-weight:600;}
+.card-sub{font-size:11px;color:var(--muted);}
+.card-b{padding:16px;}
+
+/* PROGRESS BARS */
+.prog-wrap{margin-bottom:11px;}
+.prog-meta{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;}
+.prog-name{font-weight:500;color:var(--text);}
+.prog-vals{font-family:'DM Mono',monospace;color:var(--muted);font-size:11px;display:flex;gap:10px;}
+.prog-bar{height:8px;background:var(--s2);border-radius:99px;overflow:hidden;position:relative;}
+.prog-fill{height:100%;border-radius:99px;transition:width .8s cubic-bezier(.4,0,.2,1);position:relative;}
+.prog-real{position:absolute;top:0;height:100%;border-radius:99px;background:var(--green);transition:width .8s;}
+
+/* TABLE */
+.data-table{width:100%;border-collapse:collapse;font-size:12px;}
+.data-table th{padding:9px 12px;text-align:left;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border);background:var(--s2);}
+.data-table td{padding:9px 12px;border-bottom:1px solid rgba(48,54,61,.4);vertical-align:middle;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:hover td{background:rgba(255,255,255,.02);}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;}
+.t-infra{background:rgba(13,207,176,.15);color:var(--teal);}
+.t-elet{background:rgba(239,68,68,.15);color:var(--red);}
+.t-acab{background:rgba(34,197,94,.15);color:var(--green);}
+.t-piso{background:rgba(245,166,35,.15);color:var(--amber);}
+.t-cob{background:rgba(26,115,232,.15);color:var(--blue);}
+.t-rev{background:rgba(167,139,250,.15);color:var(--purple);}
+.t-alv{background:rgba(139,148,158,.15);color:var(--muted);}
+.t-hid{background:rgba(26,115,232,.2);color:#5ba4ff;}
+.t-pint{background:rgba(245,166,35,.2);color:#f9a826;}
+.t-outros{background:rgba(139,148,158,.12);color:#aaa;}
+
+/* DEVIATION BADGE */
+.dev-pos{color:var(--green);font-family:'DM Mono',monospace;font-size:11px;}
+.dev-neg{color:var(--red);font-family:'DM Mono',monospace;font-size:11px;}
+.dev-ok{color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;}
+
+/* STATUS DOT */
+.sdot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;}
+.sd-green{background:var(--green);}
+.sd-amber{background:var(--amber);box-shadow:0 0 5px var(--amber);}
+.sd-blue{background:var(--blue);}
+.sd-gray{background:var(--border);}
+.sd-red{background:var(--red);box-shadow:0 0 5px var(--red);}
+
+/* RESUMO LINHA */
+.sum-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(48,54,61,.4);font-size:13px;}
+.sum-row:last-child{border-bottom:none;}
+.sum-label{color:var(--muted);}
+.sum-val{font-weight:600;font-family:'DM Mono',monospace;}
+
+/* INPUT */
+.inp{width:100%;padding:8px 12px;background:var(--s2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'Sora',sans-serif;font-size:13px;outline:none;transition:border-color .2s;}
+.inp:focus{border-color:var(--blue);}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;place-items:center;backdrop-filter:blur(4px);}
+.modal-overlay.open{display:grid;}
+.modal{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:26px;width:90%;max-width:520px;max-height:82vh;overflow-y:auto;}
+.modal h3{font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:16px;}
+.fg{margin-bottom:13px;}
+.fg label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:600;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;}
+.btn-mc{padding:8px 16px;background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--muted);font-family:'Sora',sans-serif;font-size:12px;cursor:pointer;}
+.btn-ms{padding:8px 16px;background:var(--blue);border:none;border-radius:7px;color:#fff;font-family:'Sora',sans-serif;font-size:12px;font-weight:600;cursor:pointer;}
+
+/* CHART */
+canvas{max-height:280px;}
+
+/* TABS */
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* ALERTAS */
+.alert{display:flex;gap:10px;padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:12px;align-items:flex-start;line-height:1.5;}
+.al-amber{background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);color:#fbbf24;}
+.al-green{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#86efac;}
+.al-red{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;}
+.al-blue{background:rgba(26,115,232,.1);border:1px solid rgba(26,115,232,.3);color:#93c5fd;}
+
+/* PAINEL DE INCIDENTES */
+.inc-panel{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+.inc-card{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;transition:border-color .2s;}
+.inc-card:hover{border-color:var(--border);}
+.inc-card.grav-1{border-top:3px solid var(--amber);}
+.inc-card.grav-2{border-top:3px solid #fb923c;}
+.inc-card.grav-3{border-top:3px solid var(--red);}
+.inc-card.grav-4{border-top:3px solid #7f1d1d;}
+.inc-count{font-size:28px;font-weight:700;font-family:'DM Mono',monospace;}
+.inc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-top:3px;}
+.inc-cost{font-size:11px;font-family:'DM Mono',monospace;margin-top:5px;}
+@media(max-width:700px){.inc-panel{grid-template-columns:1fr 1fr;}}
+
+/* KPI PREVISTO BADGE */
+.kpi-trend{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600;display:inline-block;margin-top:4px;}
+.kt-up{background:rgba(239,68,68,.15);color:var(--red);}
+.kt-down{background:rgba(34,197,94,.15);color:var(--green);}
+.kt-eq{background:rgba(139,148,158,.15);color:var(--muted);}
+</style>
+  <!-- ══ PWA GeoSistema PRO ══ -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#1a73e8">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="GeoSistema PRO">
+  <link rel="apple-touch-icon" href="./assets/icon-192.png">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(r => console.log('SW registrado:', r.scope))
+          .catch(e => console.warn('SW falhou:', e));
+      });
+    }
+  </script>
+</head>
+<body>
+
+<!-- ══════════ HEADER UNIFICADO ══════════ -->
+<header>
+  <a class="logo" href="#">
+    <div class="logo-icon">💰</div>
+    <div>
+      <div class="logo-name">GeoSistema PRO</div>
+      <div class="logo-sub">Dashboard Financeiro</div>
+    </div>
+  </a>
+
+  <div class="header-sep"></div>
+
+  <!-- Navegação entre páginas -->
+  <div class="nav-pages">
+    <a class="np" href="Dashboard_obra.html">📋 Encarregado</a>
+    <a class="np" href="Diario_de_Obra_v2.html">🏗️ Obras</a>
+    <a class="np active-page" href="#">💰 Financeiro</a>
+    <a class="np" href="Dashboard_Manutencao.html">🔧 Manutenção</a>
+  </div>
+
+  <div class="header-sep2"></div>
+
+  <!-- Abas internas -->
+  <nav class="tabs">
+    <button class="nb active" onclick="showTab('visao',this)">Visão Geral</button>
+    <button class="nb" onclick="showTab('incidentes',this)">Incidentes</button>
+    <button class="nb" onclick="showTab('capitulos',this)">Capítulos</button>
+    <button class="nb" onclick="showTab('curvaS',this)">Curva S</button>
+    <button class="nb" onclick="showTab('medicao',this)">Medição</button>
+  </nav>
+
+  <!-- Indicador de sync -->
+  <div style="display:flex;align-items:center;gap:6px;margin-left:8px;">
+    <div class="sync-dot" id="syncDot"></div>
+    <span class="sync-label" id="syncLabel">sincronizando…</span>
+  </div>
+
+  <div class="header-badge" style="margin-left:12px;">SINAPI/SBC · Recife</div>
+</header>
+
+<main>
+
+<!-- ═══════════════ TAB: VISÃO GERAL ═══════════════ -->
+<div id="tab-visao" class="tab-content active">
+
+  <div class="top-bar">
+    <div class="page-title">
+      <h2>Igreja Lauro de Freitas Central</h2>
+      <p>Orçamento SINAPI/SBC · Base Recife (BA) · Total: <strong style="color:var(--text);">R$ 853.871,51</strong></p>
+    </div>
+    <div class="btn-row">
+      <button class="btn-o" onclick="exportJSON()">⬇ Exportar JSON</button>
+      <button class="btn-p" onclick="openModal()">✏️ Registrar Medição</button>
+    </div>
+  </div>
+
+  <!-- KPIs FINANCEIROS: Orçado × Executado × Previsto -->
+  <div class="kpi-grid" id="kpiGrid">
+    <div class="kpi c-blue">
+      <div class="kpi-icon">📋</div>
+      <div class="kpi-val small">R$ 853.871</div>
+      <div class="kpi-lbl">Orçado Total</div>
+      <div class="kpi-sub" style="color:var(--blue);">22 capítulos ativos</div>
+    </div>
+    <div class="kpi c-green">
+      <div class="kpi-icon">✅</div>
+      <div class="kpi-val small" id="kpi-med">R$ 0</div>
+      <div class="kpi-lbl">Executado (Medido)</div>
+      <div class="kpi-sub" style="color:var(--green);" id="kpi-med-pct">0% executado</div>
+    </div>
+    <div class="kpi c-purple">
+      <div class="kpi-icon">🔮</div>
+      <div class="kpi-val small" id="kpi-previsto">R$ 0</div>
+      <div class="kpi-lbl">Previsto ao Término</div>
+      <div class="kpi-sub" id="kpi-previsto-sub" style="color:var(--purple);">EAC calculado</div>
+    </div>
+    <div class="kpi c-amber">
+      <div class="kpi-icon">⚡</div>
+      <div class="kpi-val small" id="kpi-saldo">R$ 853.871</div>
+      <div class="kpi-lbl">Saldo a Executar</div>
+      <div class="kpi-sub" style="color:var(--amber);" id="kpi-saldo-pct">100% restante</div>
+    </div>
+    <div class="kpi c-teal">
+      <div class="kpi-icon">🏗️</div>
+      <div class="kpi-val small" id="kpi-fis-pct">—</div>
+      <div class="kpi-lbl">Avanço Físico</div>
+      <div class="kpi-sub" style="color:var(--teal);" id="kpi-fis-src">Diário de Obra</div>
+    </div>
+    <div class="kpi c-purple">
+      <div class="kpi-icon">📊</div>
+      <div class="kpi-val small" id="kpi-desvio">—</div>
+      <div class="kpi-lbl">Desvio Físico–Fin.</div>
+      <div class="kpi-sub" id="kpi-desvio-txt" style="color:var(--muted);">calculando…</div>
+    </div>
+    <div class="kpi c-red">
+      <div class="kpi-icon">🔴</div>
+      <div class="kpi-val small" id="kpi-alertas">—</div>
+      <div class="kpi-lbl">Incidentes Ativos</div>
+      <div class="kpi-sub" id="kpi-inc-custo" style="color:var(--red);">custo estimado</div>
+    </div>
+  </div>
+
+  <div class="g31">
+    <!-- PROGRESSO POR FASE -->
+    <div class="card">
+      <div class="card-h">
+        <span class="card-title">📊 Orçado × Executado × Previsto por Fase</span>
+        <span class="card-sub" id="pct-geral-label">0% medido</span>
+      </div>
+      <div class="card-b" id="fasesProgress"></div>
+    </div>
+
+    <!-- RESUMO FINANCEIRO -->
+    <div class="card">
+      <div class="card-h"><span class="card-title">💼 Indicadores EVM</span><span class="card-sub">Earned Value Management</span></div>
+      <div class="card-b">
+        <div class="sum-row">
+          <span class="sum-label">BAC — Orçamento Original</span>
+          <span class="sum-val">R$ 853.871,51</span>
+        </div>
+        <div class="sum-row">
+          <span class="sum-label">AC — Custo Real (Medido)</span>
+          <span class="sum-val" id="res-med" style="color:var(--green);">R$ 0,00</span>
+        </div>
+        <div class="sum-row">
+          <span class="sum-label">EV — Valor Agregado (Físico)</span>
+          <span class="sum-val" id="res-ev" style="color:var(--teal);">R$ 0,00</span>
+        </div>
+        <div class="sum-row">
+          <span class="sum-label">EAC — Previsto ao Término</span>
+          <span class="sum-val" id="res-eac" style="color:var(--purple);">—</span>
+        </div>
+        <div class="sum-row">
+          <span class="sum-label">Saldo a Executar (ETC)</span>
+          <span class="sum-val" id="res-saldo" style="color:var(--amber);">R$ 853.871,51</span>
+        </div>
+        <div class="sum-row" style="margin-top:8px;border-top:1px solid var(--border);padding-top:12px;">
+          <span class="sum-label">CPI — Índice Desempenho Custo</span>
+          <span class="sum-val" id="res-cpi" style="color:var(--blue);">—</span>
+        </div>
+        <div class="sum-row">
+          <span class="sum-label">SPI — Índice Desempenho Prazo</span>
+          <span class="sum-val" id="res-spi" style="color:var(--purple);">—</span>
+        </div>
+        <div class="sum-row">
+          <span class="sum-label">Custo por Incidente (estimado)</span>
+          <span class="sum-val" id="res-inc-custo" style="color:var(--red);">R$ 0,00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="g2">
+    <div class="card">
+      <div class="card-h"><span class="card-title">🍩 Distribuição por Capítulo</span><span class="card-sub">% do total</span></div>
+      <div class="card-b"><canvas id="doughnutChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><span class="card-title">📈 Top 8 Capítulos — Orçado vs Medido</span><span class="card-sub">R$ mil</span></div>
+      <div class="card-b"><canvas id="barChart"></canvas></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════ TAB: INCIDENTES ═══════════════ -->
+<div id="tab-incidentes" class="tab-content">
+  <div class="top-bar">
+    <div class="page-title">
+      <h2>Custo por Incidente / Paralisação</h2>
+      <p>Leitura de <code style="font-size:11px;color:var(--teal);">geo_incidentes</code> — impacto financeiro estimado</p>
+    </div>
+    <button class="btn-o" onclick="carregarIncidentes()">🔄 Atualizar</button>
+  </div>
+
+  <div id="alertasIncBox"></div>
+
+  <!-- PAINÉIS DE GRAVIDADE -->
+  <div class="inc-panel">
+    <div class="inc-card grav-1">
+      <div class="inc-count" id="incG1" style="color:var(--amber);">0</div>
+      <div class="inc-label">⚠️ Baixa</div>
+      <div class="inc-cost" id="incG1Cost" style="color:var(--amber);">R$ 0</div>
+    </div>
+    <div class="inc-card grav-2">
+      <div class="inc-count" id="incG2" style="color:#fb923c;">0</div>
+      <div class="inc-label">🔶 Média</div>
+      <div class="inc-cost" id="incG2Cost" style="color:#fb923c;">R$ 0</div>
+    </div>
+    <div class="inc-card grav-3">
+      <div class="inc-count" id="incG3" style="color:var(--red);">0</div>
+      <div class="inc-label">🔴 Alta</div>
+      <div class="inc-cost" id="incG3Cost" style="color:var(--red);">R$ 0</div>
+    </div>
+    <div class="inc-card grav-4">
+      <div class="inc-count" id="incG4" style="color:#fca5a5;">0</div>
+      <div class="inc-label">🚨 Crítica</div>
+      <div class="inc-cost" id="incG4Cost" style="color:#fca5a5;">R$ 0</div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-h"><span class="card-title">📋 Lista de Incidentes</span><span class="card-sub" id="incTotalLabel">0 registros</span></div>
+      <div class="card-b" style="overflow-x:auto;">
+        <table class="data-table" id="tabelaIncidentes">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Tipo</th>
+              <th>Gravidade</th>
+              <th>Custo Est.</th>
+              <th>Status</th>
+              <th>Descrição</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyIncidentes">
+            <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px;">Nenhum incidente lido do localStorage</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><span class="card-title">💸 Custo por Tipo de Incidente</span></div>
+      <div class="card-b"><canvas id="incChart" style="max-height:260px;"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <div class="card-h"><span class="card-title">⚠️ Como calcular custo por incidente?</span></div>
+    <div class="card-b" style="font-size:12px;color:var(--muted);line-height:1.8;">
+      O sistema lê <code style="color:var(--teal);">geo_incidentes</code> gravado pelo Diário de Obra. Para cada incidente, o custo é estimado por:<br>
+      <strong style="color:var(--text);">Custo = (Custo Diário da Obra / Horas Jornada) × Horas Paradas</strong><br>
+      Incidentes sem campo <code>custo_estimado</code> usam o custo-padrão por gravidade:
+      Baixa → R$ 200 · Média → R$ 800 · Alta → R$ 2.500 · Crítica → R$ 8.000<br>
+      Paralização total: custo diário médio = <strong style="color:var(--text);" id="custoDiario">R$ 4.000/dia</strong> (configurável).
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ TAB: CAPÍTULOS ═══════════════ -->
+<div id="tab-capitulos" class="tab-content">
+  <div class="top-bar">
+    <div class="page-title"><h2>Capítulos Orçamentários</h2><p>Detalhamento SINAPI/SBC por capítulo</p></div>
+    <input type="text" class="inp" id="searchCap" placeholder="🔍 Buscar capítulo…" style="max-width:260px;" oninput="filtrarCapitulos(this.value)">
+  </div>
+  <div class="card">
+    <div style="overflow-x:auto;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Capítulo</th>
+            <th>Fase</th>
+            <th>Orçado</th>
+            <th>% Orc.</th>
+            <th>Executado</th>
+            <th>% Exec.</th>
+            <th>Previsto (EAC)</th>
+            <th>Saldo</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyCapitulos"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ TAB: CURVA S ═══════════════ -->
+<div id="tab-curvaS" class="tab-content">
+  <div class="top-bar">
+    <div class="page-title">
+      <h2>Curva S — Físico × Financeiro</h2>
+      <p>Dados reais de <code style="font-size:11px;color:var(--teal);">geo_avanco_fisico</code> e <code style="font-size:11px;color:var(--teal);">geo_atividades_pct</code></p>
+    </div>
+    <button class="btn-o" onclick="renderCurvaS()">🔄 Atualizar Curva</button>
+  </div>
+
+  <div id="curvaSAlertBox"></div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-h">
+      <span class="card-title">📈 Curva S — Acumulado</span>
+      <span class="card-sub" id="curvaSDataSrc">fonte: localStorage + medições</span>
+    </div>
+    <div class="card-b"><canvas id="curvaSChart" style="max-height:340px;"></canvas></div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-h"><span class="card-title">📅 Cronograma Físico-Financeiro</span></div>
+      <div class="card-b">
+        <table class="data-table">
+          <thead><tr><th>Período</th><th>Físico Plan.</th><th>Físico Real.</th><th>Fin. Plan.</th><th>Fin. Real.</th><th>Desvio</th></tr></thead>
+          <tbody id="tbodyCurvaS"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><span class="card-title">⚡ Progresso por Atividade</span><span class="card-sub" id="atividadesLabel">geo_atividades_pct</span></div>
+      <div class="card-b" id="atividadesBox">
+        <p style="color:var(--muted);font-size:12px;">Nenhuma atividade lida do localStorage</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ TAB: MEDIÇÃO ═══════════════ -->
+<div id="tab-medicao" class="tab-content">
+  <div class="top-bar">
+    <div class="page-title"><h2>Boletim de Medição</h2><p>Registro e histórico por capítulo</p></div>
+    <button class="btn-p" onclick="openModal()">➕ Nova Medição</button>
+  </div>
+
+  <div class="g2" style="margin-bottom:16px;">
+    <div class="card">
+      <div class="card-h"><span class="card-title">📋 Medições Registradas</span><span class="card-sub" id="total-med-label">0 medições</span></div>
+      <div class="card-b"><div id="listaMedicoes"><p style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0;">Nenhuma medição registrada.</p></div></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><span class="card-title">📊 Evolução das Medições</span></div>
+      <div class="card-b"><canvas id="evolucaoChart" style="max-height:240px;"></canvas></div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- ══ MODAL MEDIÇÃO ══ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3>📋 Registrar Medição</h3>
+    <div class="fg">
+      <label>Capítulo</label>
+      <select class="inp" id="mCap"></select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="fg">
+        <label>Valor Medido (R$)</label>
+        <input type="number" class="inp" id="mValor" placeholder="0,00" min="0">
+      </div>
+      <div class="fg">
+        <label>% Físico Realizado</label>
+        <input type="number" class="inp" id="mFisico" placeholder="0" min="0" max="100">
+      </div>
+    </div>
+    <div class="fg">
+      <label>Data da Medição</label>
+      <input type="date" class="inp" id="mData">
+    </div>
+    <div class="fg">
+      <label>Responsável</label>
+      <input type="text" class="inp" id="mResp" placeholder="Engenheiro responsável">
+    </div>
+    <div class="fg">
+      <label>Observações</label>
+      <textarea class="inp" id="mObs" rows="2" placeholder="Serviços medidos, pendências…"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-mc" onclick="closeModal()">Cancelar</button>
+      <button class="btn-ms" onclick="salvarMedicao()">💾 Salvar Medição</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════
+   DADOS — SINAPI/SBC
+══════════════════════════════════ */
+const TOTAL_ORC = 853871.51;
+const CUSTO_DIARIO_PADRAO = 4000; // R$/dia, configurável
+
+const CAPITULOS = [
+  {cod:'62', desc:'Serviços Iniciais',                        fase:'Terreno',                 orc:3083.52,   tag:'t-outros'},
+  {cod:'64', desc:'Fundação e Estrutura',                     fase:'Infra/Superestrutura',    orc:161769.69, tag:'t-infra'},
+  {cod:'65', desc:'Alvenaria, Fechamentos',                   fase:'Alvenaria',               orc:29982.00,  tag:'t-alv'},
+  {cod:'66', desc:'Coberturas',                               fase:'Cobertura',               orc:91042.55,  tag:'t-cob'},
+  {cod:'67', desc:'Impermeabilização',                        fase:'Cobertura',               orc:1102.20,   tag:'t-cob'},
+  {cod:'68', desc:'Esquadrias',                               fase:'Acabamentos',             orc:31417.21,  tag:'t-acab'},
+  {cod:'69', desc:'Sistemas Hidráulicos',                     fase:'Hidráulica',              orc:6832.95,   tag:'t-hid'},
+  {cod:'70', desc:'Sistemas Sanitários e Pluviais',           fase:'Hidráulica',              orc:3060.39,   tag:'t-hid'},
+  {cod:'71', desc:'Prevenção e Combate a Incêndio',           fase:'AVCB/Segurança',          orc:1546.73,   tag:'t-outros'},
+  {cod:'72', desc:'Sistemas Elétricos',                       fase:'Elétrica',                orc:145438.74, tag:'t-elet'},
+  {cod:'73', desc:'Sistema de Iluminação',                    fase:'Elétrica',                orc:34296.85,  tag:'t-elet'},
+  {cod:'75', desc:'Proteção Descargas Atmosféricas (SPDA)',   fase:'Projeto/SPDA',            orc:5052.80,   tag:'t-outros'},
+  {cod:'76', desc:'Condicionamento de Ar / Ventilação',       fase:'Acabamentos',             orc:32042.22,  tag:'t-acab'},
+  {cod:'77', desc:'Revestimentos Paredes e Tetos',            fase:'Revestimentos',           orc:37964.34,  tag:'t-rev'},
+  {cod:'78', desc:'Pisos',                                    fase:'Pisos',                   orc:114524.65, tag:'t-piso'},
+  {cod:'80', desc:'Pintura Interna',                          fase:'Pintura',                 orc:15084.95,  tag:'t-pint'},
+  {cod:'82', desc:'Louças, Metais e Acessórios',              fase:'Acabamentos',             orc:10318.15,  tag:'t-acab'},
+  {cod:'83', desc:'Vidros',                                   fase:'Acabamentos',             orc:27358.22,  tag:'t-acab'},
+  {cod:'84', desc:'Divisórias',                               fase:'Acabamentos',             orc:13326.40,  tag:'t-acab'},
+  {cod:'87', desc:'Mobiliário',                               fase:'Acabamentos',             orc:33645.08,  tag:'t-acab'},
+  {cod:'88', desc:'Serviços Externos e Complementares',       fase:'Serviços Iniciais',       orc:19574.68,  tag:'t-outros'},
+  {cod:'99', desc:'Materiais Reembolsáveis',                  fase:'Materiais',               orc:35407.19,  tag:'t-outros'},
+];
+
+/* ══ CUSTO PADRÃO POR GRAVIDADE ══ */
+const CUSTO_GRAVIDADE = { 1:200, 2:800, 3:2500, 4:8000 };
+
+/* ══ ESTADO ══ */
+let medicoes   = JSON.parse(localStorage.getItem('geo_medicoes')    || '[]');
+let incidentes = [];
+let atividades = {};
+let avancoFis  = 0;
+
+let chartDoughnut, chartBar, chartCurvaS, chartSemanal, chartEvolucao, chartInc;
+
+/* ══ FORMATTERS ══ */
+const fmtR = v => 'R$ ' + v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtP = v => (typeof v==='number'?v.toFixed(1):'—')+'%';
+
+/* ══════════════════════════════════
+   LEITURA DO localStorage (SYNC)
+══════════════════════════════════ */
+function lerLocalStorage() {
+  // 1. Avanço físico — geo_avanco_fisico
+  const af = parseFloat(localStorage.getItem('geo_avanco_fisico') || '0');
+  avancoFis = isNaN(af) ? 0 : af;
+
+  // 2. Atividades — geo_atividades_pct (objeto {atividade: pct})
+  try {
+    const raw = localStorage.getItem('geo_atividades_pct');
+    atividades = raw ? JSON.parse(raw) : {};
+  } catch(e) { atividades = {}; }
+
+  // 3. Incidentes — geo_incidentes (array)
+  try {
+    const raw = localStorage.getItem('geo_incidentes');
+    incidentes = raw ? JSON.parse(raw) : [];
+    if(!Array.isArray(incidentes)) incidentes = [];
+  } catch(e) { incidentes = []; }
+
+  // 4. Medições (deste próprio dashboard)
+  medicoes = JSON.parse(localStorage.getItem('geo_medicoes') || '[]');
+
+  // Atualiza indicador de sync
+  const hasDados = avancoFis > 0 || incidentes.length > 0 || Object.keys(atividades).length > 0;
+  const dot = document.getElementById('syncDot');
+  const lbl = document.getElementById('syncLabel');
+  if(hasDados){
+    dot.className='sync-dot ok';
+    lbl.textContent = 'sincronizado';
+  } else {
+    dot.className='sync-dot warn';
+    lbl.textContent = 'sem dados externos';
+  }
+  // Atualiza custoDiario display
+  const el = document.getElementById('custoDiario');
+  if(el) el.textContent = fmtR(CUSTO_DIARIO_PADRAO)+'/dia';
+}
+
+/* ══ HELPERS ══ */
+function medidoPorCap(cod){ return medicoes.filter(m=>m.cod===cod).reduce((s,m)=>s+m.valor,0); }
+function totalMedido(){ return medicoes.reduce((s,m)=>s+m.valor,0); }
+
+function custoPorIncidente(inc) {
+  if (inc.custo_estimado && !isNaN(parseFloat(inc.custo_estimado)))
+    return parseFloat(inc.custo_estimado);
+  const grav  = normGrav(inc.gravidade || inc.nivel || 1);
+  const horas = parseFloat(inc.horas_paradas) || 0;
+  if (horas > 0) return (CUSTO_DIARIO_PADRAO / 8) * horas;
+  return CUSTO_GRAVIDADE[grav] || 200;
+}
+
+function totalCustoIncidentes(){
+  return incidentes.reduce((s,i)=>s+custoPorIncidente(i),0);
+}
+
+/* ══════════════════════════════════
+   TABS
+══════════════════════════════════ */
+function normGrav(raw) {
+  if (!raw) return 1;
+  const n = parseInt(raw);
+  if (!isNaN(n) && n >= 1 && n <= 4) return n;
+  const s = String(raw).toLowerCase().replace(/[áàãâ]/g,'a').replace(/[éê]/g,'e').replace(/[íì]/g,'i').replace(/[óõô]/g,'o').replace(/[ú]/g,'u');
+  if (s === 'leve')     return 1;
+  if (s === 'medio' || s === 'moderado') return 2;
+  if (s === 'grave')    return 3;
+  if (s === 'critico')  return 4;
+  return 1;
+}
+/* ══════════════════════════════════
+   MODAL
+══════════════════════════════════ */
+function openModal() {
+  document.getElementById('mCap').innerHTML = CAPITULOS.map(c=>`<option value="${c.cod}">${c.cod} — ${c.desc}</option>`).join('');
+  document.getElementById('mData').value = new Date().toISOString().split('T')[0];
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+
+function salvarMedicao() {
+  const cod    = document.getElementById('mCap').value;
+  const valor  = parseFloat(document.getElementById('mValor').value)||0;
+  const fisico = parseFloat(document.getElementById('mFisico').value)||0;
+  const data   = document.getElementById('mData').value;
+  const resp   = document.getElementById('mResp').value;
+  const obs    = document.getElementById('mObs').value;
+  if(!valor){ alert('Informe o valor medido'); return; }
+  medicoes.push({cod,valor,fisico,data,resp,obs,ts:Date.now()});
+  localStorage.setItem('geo_medicoes', JSON.stringify(medicoes));
+  closeModal();
+  renderAll();
+}
+
+/* ══════════════════════════════════
+   RENDER KPIs
+══════════════════════════════════ */
+function renderKPIs() {
+  const med    = totalMedido();
+  const saldo  = TOTAL_ORC - med;
+  const pctFin = (med/TOTAL_ORC*100);
+  const pctFis = avancoFis;
+  const desvio = pctFis - pctFin;
+
+  // EVM
+  const EV  = (pctFis/100)*TOTAL_ORC;
+  const AC  = med;
+  const BAC = TOTAL_ORC;
+  const CPI = AC > 0 ? EV/AC : null;
+  const SPI = BAC > 0 ? EV/((pctFis/100)*BAC) : null;
+  const EAC = (CPI && CPI > 0) ? BAC/CPI : BAC; // BAC/CPI
+  const ETC = EAC - AC;
+
+  // Custo incidentes
+  const custoInc = totalCustoIncidentes();
+  const alertas  = incidentes.length;
+
+  // KPIs
+  document.getElementById('kpi-med').textContent       = 'R$ '+Math.round(med).toLocaleString('pt-BR');
+  document.getElementById('kpi-med-pct').textContent   = fmtP(pctFin)+' executado';
+  document.getElementById('kpi-previsto').textContent  = 'R$ '+Math.round(EAC).toLocaleString('pt-BR');
+
+  const diffEAC = EAC - BAC;
+  const subPrev = document.getElementById('kpi-previsto-sub');
+  if(CPI){
+    subPrev.textContent = diffEAC>0 ? '▲ '+fmtR(diffEAC)+' acima' : '▼ '+fmtR(Math.abs(diffEAC))+' abaixo';
+    subPrev.style.color = diffEAC>0 ? 'var(--red)' : 'var(--green)';
+  } else {
+    subPrev.textContent = 'EAC = BAC (sem dados)';
+    subPrev.style.color = 'var(--muted)';
+  }
+
+  document.getElementById('kpi-saldo').textContent     = 'R$ '+Math.round(Math.max(0,saldo)).toLocaleString('pt-BR');
+  document.getElementById('kpi-saldo-pct').textContent = fmtP(saldo/TOTAL_ORC*100)+' restante';
+  document.getElementById('kpi-fis-pct').textContent   = pctFis > 0 ? pctFis+'%' : '—';
+  document.getElementById('kpi-fis-src').textContent   = pctFis > 0 ? 'geo_avanco_fisico ✓' : 'sem dado do Diário';
+
+  document.getElementById('kpi-desvio').textContent    = fmtP(Math.abs(desvio));
+  const devTxt = document.getElementById('kpi-desvio-txt');
+  devTxt.textContent = desvio>5?'atraso financeiro':desvio<-5?'adiantado':' em dia';
+  devTxt.style.color = desvio>5?'var(--red)':desvio<-5?'var(--green)':'var(--muted)';
+
+  document.getElementById('kpi-alertas').textContent   = alertas||'0';
+  document.getElementById('kpi-inc-custo').textContent = alertas ? fmtR(custoInc)+' estimado' : 'nenhum incidente';
+
+  // Resumo EVM
+  document.getElementById('res-med').textContent  = fmtR(AC);
+  document.getElementById('res-ev').textContent   = fmtR(EV);
+  document.getElementById('res-eac').textContent  = CPI ? fmtR(EAC) : 'sem dados suficientes';
+  document.getElementById('res-saldo').textContent = fmtR(Math.max(0,ETC));
+  document.getElementById('res-cpi').textContent  = CPI ? CPI.toFixed(3) : '—';
+  document.getElementById('res-spi').textContent  = SPI ? SPI.toFixed(3) : '—';
+  document.getElementById('res-inc-custo').textContent = fmtR(custoInc);
+
+  document.getElementById('pct-geral-label').textContent = fmtP(pctFin)+' medido · '+fmtP(pctFis)+' físico';
+}
+
+/* ══════════════════════════════════
+   RENDER FASES
+══════════════════════════════════ */
+function renderFases() {
+  const c = document.getElementById('fasesProgress');
+  const pctFis = avancoFis;
+  const CPI_val = (() => {
+    const med = totalMedido();
+    const EV  = (pctFis/100)*TOTAL_ORC;
+    return med > 0 ? EV/med : 1;
+  })();
+
+  const porFase = {};
+  CAPITULOS.forEach(cap=>{
+    if(!porFase[cap.fase]) porFase[cap.fase]={orc:0,med:0};
+    porFase[cap.fase].orc += cap.orc;
+    porFase[cap.fase].med += medidoPorCap(cap.cod);
+  });
+
+  const sorted = Object.entries(porFase).sort((a,b)=>b[1].orc-a[1].orc);
+  c.innerHTML = sorted.map(([fase,vals])=>{
+    const pctOrc = (vals.orc/TOTAL_ORC*100).toFixed(1);
+    const pctMed = vals.orc>0 ? Math.min(100,(vals.med/vals.orc*100)).toFixed(1) : 0;
+    // Previsto por fase com CPI
+    const previsto = CPI_val > 0 ? vals.orc/CPI_val : vals.orc;
+    const pctPrev  = Math.min(140,(previsto/vals.orc*100)).toFixed(1);
+    const gradColor= vals.med>0 ? '#22c55e' : '#1a73e8';
+    return `
+    <div class="prog-wrap">
+      <div class="prog-meta">
+        <span class="prog-name">${fase}</span>
+        <div class="prog-vals">
+          <span>${fmtR(vals.orc)}</span>
+          <span style="color:var(--green);">${pctMed}% exec.</span>
+          <span style="color:var(--purple);" title="Previsto ao término">${pctPrev}% prev.</span>
+        </div>
+      </div>
+      <div class="prog-bar">
+        <div class="prog-fill" style="width:${pctOrc}%;background:rgba(26,115,232,.25);">
+          <div class="prog-real" style="width:${pctMed}%;background:${gradColor};position:absolute;top:0;left:0;height:100%;border-radius:99px;"></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════
+   RENDER CAPÍTULOS
+══════════════════════════════════ */
+function renderCapitulos(filtro='') {
+  const tbody  = document.getElementById('tbodyCapitulos');
+  const pctFis = avancoFis;
+  const med    = totalMedido();
+  const CPI    = med > 0 ? ((pctFis/100)*TOTAL_ORC)/med : 1;
+
+  const lista = CAPITULOS.filter(c=>
+    c.desc.toLowerCase().includes(filtro.toLowerCase())||
+    c.cod.includes(filtro)||c.fase.toLowerCase().includes(filtro.toLowerCase())
+  );
+
+  tbody.innerHTML = lista.map(c=>{
+    const medCap   = medidoPorCap(c.cod);
+    const saldo    = c.orc - medCap;
+    const pctOrc   = (c.orc/TOTAL_ORC*100).toFixed(2);
+    const pctMed   = c.orc>0?(medCap/c.orc*100).toFixed(1):0;
+    // EAC por capítulo
+    const eacCap   = CPI > 0 ? c.orc/CPI : c.orc;
+    const desvio   = parseFloat(pctMed) - pctFis;
+    let devHtml = `<span class="dev-ok">—</span>`;
+    if(medCap>0){
+      devHtml = desvio>5 ? `<span class="dev-pos">+${desvio.toFixed(1)}%</span>` :
+                desvio<-5 ? `<span class="dev-neg">${desvio.toFixed(1)}%</span>` :
+                `<span class="dev-ok">≈</span>`;
+    }
+    const statusDot = medCap===0 ? '<span class="sdot sd-gray"></span>Pendente' :
+                      parseFloat(pctMed)>=100 ? '<span class="sdot sd-green"></span>Concluído' :
+                      '<span class="sdot sd-amber"></span>Em andamento';
+    return `<tr>
+      <td style="font-family:'DM Mono',monospace;color:var(--muted);font-size:11px;">${c.cod}</td>
+      <td style="max-width:220px;font-size:12px;">${c.desc}</td>
+      <td><span class="tag ${c.tag}">${c.fase}</span></td>
+      <td style="font-family:'DM Mono',monospace;">${fmtR(c.orc)}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--muted);">${pctOrc}%</td>
+      <td style="font-family:'DM Mono',monospace;color:${medCap>0?'var(--green)':'var(--muted)'};">${fmtR(medCap)}</td>
+      <td style="font-family:'DM Mono',monospace;">${pctMed}%</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--purple);">${CPI!==1?fmtR(eacCap):'—'}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--amber);">${fmtR(Math.max(0,saldo))}</td>
+      <td>${statusDot}</td>
+    </tr>`;
+  }).join('');
+}
+
+function filtrarCapitulos(v){ renderCapitulos(v); }
+
+/* ══════════════════════════════════
+   RENDER INCIDENTES
+══════════════════════════════════ */
+function carregarIncidentes() {
+  lerLocalStorage();
+
+  const alertBox = document.getElementById('alertasIncBox');
+  alertBox.innerHTML = '';
+
+  // Alertas de paralisação
+  const paraliz = incidentes.filter(i =>
+  (i.tipo || '').toLowerCase().includes('paraliz') || normGrav(i.gravidade || i.nivel) >= 3
+);
+  if(paraliz.length){
+    const custoParaliz = paraliz.reduce((s,i)=>s+custoPorIncidente(i),0);
+    alertBox.innerHTML += `<div class="alert al-red">🚨 <div><strong>${paraliz.length} paralisação(ões) / incidente(s) críticos</strong> — Custo estimado acumulado: <strong>${fmtR(custoParaliz)}</strong>. Verificar impacto no cronograma financeiro.</div></div>`;
+  }
+
+  const custoTotal = totalCustoIncidentes();
+  if(incidentes.length === 0){
+    alertBox.innerHTML += `<div class="alert al-blue">ℹ️ Nenhum incidente lido do localStorage. Certifique-se de que o Diário de Obra gravou registros em <code>geo_incidentes</code>.</div>`;
+  }
+
+  // Contagem e custo por gravidade
+  for(let g=1;g<=4;g++){
+    const lista = incidentes.filter(i=>normGrav(i.gravidade||i.nivel||1)===g);
+    const custo = lista.reduce((s,i)=>s+custoPorIncidente(i),0);
+    document.getElementById('incG'+g).textContent = lista.length;
+    document.getElementById('incG'+g+'Cost').textContent = fmtR(custo);
+  }
+
+  document.getElementById('incTotalLabel').textContent = incidentes.length+' registro(s) · '+fmtR(custoTotal)+' total';
+
+  // Tabela
+  const tbody = document.getElementById('tbodyIncidentes');
+  if(!incidentes.length){
+    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px;">Nenhum incidente registrado</td></tr>';
+  } else {
+    tbody.innerHTML = incidentes.map(inc=>{
+      const g = parseInt(inc.gravidade||1);
+      const gravCores = {1:'var(--amber)',2:'#fb923c',3:'var(--red)',4:'#fca5a5'};
+      const gravLabel = {1:'⚠️ Baixa',2:'🔶 Média',3:'🔴 Alta',4:'🚨 Crítica'};
+      const custo = custoPorIncidente(inc);
+      const status = inc.status||inc.situacao||'aberto';
+      const sdot = status.toLowerCase().includes('encerr')||status.toLowerCase().includes('resolv') ? 'sd-green' :
+                   status.toLowerCase().includes('andamento') ? 'sd-amber' : 'sd-red';
+      return `<tr>
+        <td style="font-family:'DM Mono',monospace;font-size:11px;">${inc.data||inc.dt||'—'}</td>
+        <td style="font-size:12px;">${inc.tipo||inc.category||'—'}</td>
+        <td style="color:${gravCores[g]};font-weight:600;font-size:11px;">${gravLabel[g]||'—'}</td>
+        <td style="font-family:'DM Mono',monospace;color:var(--red);">${fmtR(custo)}</td>
+        <td><span class="sdot ${sdot}"></span>${status}</td>
+        <td style="font-size:11px;color:var(--muted);max-width:220px;">${inc.descricao||inc.desc||inc.texto||'—'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Chart por tipo
+  const tipos = {};
+  incidentes.forEach(i=>{
+    const t = i.tipo||i.category||'Outros';
+    if(!tipos[t]) tipos[t]=0;
+    tipos[t] += custoPorIncidente(i);
+  });
+  const tLabels = Object.keys(tipos);
+  const tData   = Object.values(tipos);
+
+  const ctx = document.getElementById('incChart').getContext('2d');
+  if(chartInc) chartInc.destroy();
+  if(tLabels.length){
+    chartInc = new Chart(ctx,{
+      type:'bar',
+      data:{
+        labels:tLabels,
+        datasets:[{label:'Custo Estimado (R$)',data:tData,backgroundColor:'rgba(239,68,68,.6)',borderRadius:4}]
+      },
+      options:{
+        responsive:true,
+        plugins:{legend:{labels:{color:'#8b949e',font:{size:11}}}},
+        scales:{
+          x:makeAxisStyle(),
+          y:{...makeAxisStyle(),ticks:{...makeAxisStyle().ticks,callback:v=>'R$'+Math.round(v/1000)+'k'}}
+        }
+      }
+    });
+  }
+}
+
+/* ══════════════════════════════════
+   RENDER CURVA S — DADOS REAIS
+══════════════════════════════════ */
+function renderCurvaS() {
+  lerLocalStorage();
+
+  const alertBox = document.getElementById('curvaSAlertBox');
+  alertBox.innerHTML = '';
+
+  // Preenche pontos reais a partir de medições acumuladas + geo_avanco_fisico
+  const labels     = ['Out/23','Nov/23 S1','Nov/23 S2','Nov/23 S3','Dez/23 S1','Atual'];
+  const planFis    = [5, 18, 35, 58, 80, 100];
+  const planFin    = [3, 15, 30, 52, 75, 100];
+
+  // Dados reais: preenche todos os períodos passados a partir das medições ordenadas
+  const sorted = [...medicoes].sort((a,b)=>a.ts-b.ts);
+  let accFin = 0;
+  // Distribui medições nos períodos (simplificado: qualquer medição vai para o período atual)
+  const pctFin = totalMedido()/TOTAL_ORC*100;
+  const pctFis = avancoFis;
+
+  // Constrói série: pontos anteriores null, ponto atual real
+  const realFis = [null,null,null,null,null, pctFis||null];
+  const realFin = [null,null,null,null,null, pctFin>0?parseFloat(pctFin.toFixed(2)):null];
+
+  // Verifica se temos atividades por período em geo_atividades_pct
+  const atKeys = Object.keys(atividades);
+  if(atKeys.length){
+    document.getElementById('curvaSDataSrc').textContent = 'fonte: geo_avanco_fisico + geo_atividades_pct ('+atKeys.length+' atividades)';
+    alertBox.innerHTML = `<div class="alert al-green">✅ ${atKeys.length} atividade(s) lida(s) de geo_atividades_pct. O ponto "Atual" reflete o avanço físico real do Diário de Obra.</div>`;
+  } else {
+    document.getElementById('curvaSDataSrc').textContent = 'fonte: geo_avanco_fisico + medições';
+    alertBox.innerHTML = `<div class="alert al-amber">⚠️ geo_atividades_pct vazio. A Curva S usa apenas o avanço físico global de geo_avanco_fisico (${pctFis}%). Para granularidade por atividade, registre dados no Diário de Obra.</div>`;
+  }
+
+  // Desvio alerta
+  const desvio = pctFis - pctFin;
+  if(Math.abs(desvio)>10){
+    alertBox.innerHTML += `<div class="alert al-red">🚨 Desvio físico-financeiro de ${Math.abs(desvio).toFixed(1)}% — ${desvio>0?'execução física à frente do financeiro (possível descapitalização)':'financeiro à frente do físico (verifique medições)'}</div>`;
+  }
+
+  // Gráfico Curva S
+  const ctx = document.getElementById('curvaSChart').getContext('2d');
+  if(chartCurvaS) chartCurvaS.destroy();
+  chartCurvaS = new Chart(ctx,{
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        {label:'Físico Planejado',data:planFis,borderColor:'#1a73e8',backgroundColor:'rgba(26,115,232,.08)',borderDash:[5,3],tension:.4,fill:true,pointRadius:4},
+        {label:'Financeiro Planejado',data:planFin,borderColor:'#f5a623',backgroundColor:'rgba(245,166,35,.06)',borderDash:[5,3],tension:.4,fill:false,pointRadius:4},
+        {label:'Físico Realizado ✓',data:realFis,borderColor:'#0dcfb0',backgroundColor:'rgba(13,207,176,.15)',tension:.4,fill:false,pointRadius:6,pointBackgroundColor:'#0dcfb0',spanGaps:false},
+        {label:'Financeiro Realizado ✓',data:realFin,borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.1)',tension:.4,fill:false,pointRadius:6,pointBackgroundColor:'#22c55e',spanGaps:false},
+      ]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{labels:{color:'#8b949e',font:{size:11}}},
+        tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y!=null?ctx.parsed.y.toFixed(1)+'%':'—'}`}}
+      },
+      scales:{
+        x:makeAxisStyle(),
+        y:{...makeAxisStyle(),min:0,max:100,ticks:{...makeAxisStyle().ticks,callback:v=>v+'%'}}
+      }
+    }
+  });
+
+  // Tabela cronograma
+  const tbody = document.getElementById('tbodyCurvaS');
+  tbody.innerHTML = labels.map((l,i)=>{
+    const dFis = realFis[i]!=null ? (realFis[i]-planFis[i]).toFixed(1) : '—';
+    const devClass = dFis==='—'?'dev-ok':parseFloat(dFis)>0?'dev-pos':parseFloat(dFis)<-5?'dev-neg':'dev-ok';
+    return `<tr>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;">${l}</td>
+      <td style="font-family:'DM Mono',monospace;">${planFis[i]}%</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--teal);">${realFis[i]!=null?realFis[i]+'%':'—'}</td>
+      <td style="font-family:'DM Mono',monospace;">${planFin[i]}%</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--green);">${realFin[i]!=null?realFin[i].toFixed(1)+'%':'—'}</td>
+      <td><span class="${devClass}">${dFis!=='—'?(parseFloat(dFis)>0?'+':'')+dFis+'%':dFis}</span></td>
+    </tr>`;
+  }).join('');
+
+  // Atividades
+  const atBox = document.getElementById('atividadesBox');
+  const atLabel = document.getElementById('atividadesLabel');
+  if(atKeys.length){
+    atLabel.textContent = atKeys.length+' atividades lidas';
+    atBox.innerHTML = atKeys.map(k=>{
+      const pct = parseFloat(atividades[k])||0;
+      const color = pct>=100?'var(--green)':pct>0?'var(--teal)':'var(--border)';
+      return `<div class="prog-wrap">
+        <div class="prog-meta">
+          <span class="prog-name" style="font-size:11px;">${k}</span>
+          <span style="font-family:'DM Mono',monospace;font-size:11px;color:${color};">${pct.toFixed(1)}%</span>
+        </div>
+        <div class="prog-bar"><div style="height:100%;border-radius:99px;background:${color};width:${Math.min(100,pct)}%;transition:width .8s;"></div></div>
+      </div>`;
+    }).join('');
+  } else {
+    atLabel.textContent = 'geo_atividades_pct';
+    atBox.innerHTML = '<p style="color:var(--muted);font-size:12px;">Nenhuma atividade em geo_atividades_pct</p>';
+  }
+}
+
+/* ══════════════════════════════════
+   RENDER MEDIÇÕES
+══════════════════════════════════ */
+function renderMedicoes() {
+  const lista = document.getElementById('listaMedicoes');
+  document.getElementById('total-med-label').textContent = medicoes.length+' medição(ões)';
+  if(!medicoes.length){
+    lista.innerHTML='<p style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0;">Nenhuma medição registrada.</p>';
+    return;
+  }
+  lista.innerHTML = [...medicoes].reverse().map(m=>{
+    const cap = CAPITULOS.find(c=>c.cod===m.cod)||{desc:'—',tag:'t-outros',fase:'—'};
+    return `<div style="padding:11px 0;border-bottom:1px solid rgba(48,54,61,.4);">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+        <div style="font-size:13px;font-weight:600;">${cap.desc}</div>
+        <span style="color:var(--green);font-family:'DM Mono',monospace;font-size:13px;font-weight:600;">${fmtR(m.valor)}</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;font-size:11px;color:var(--muted);flex-wrap:wrap;">
+        <span class="tag ${cap.tag}">${cap.fase}</span>
+        <span>📅 ${m.data||'—'}</span>
+        <span>👷 ${m.resp||'—'}</span>
+        <span>🏗️ Físico: ${m.fisico||0}%</span>
+      </div>
+      ${m.obs?`<div style="font-size:11px;color:var(--muted);margin-top:4px;padding:6px 10px;background:var(--s2);border-radius:6px;">${m.obs}</div>`:''}
+    </div>`;
+  }).join('');
+
+  renderEvolucaoChart();
+}
+
+/* ══════════════════════════════════
+   CHARTS
+══════════════════════════════════ */
+function makeAxisStyle(){
+  return {
+    ticks:{color:'#8b949e',font:{family:'DM Mono',size:10}},
+    grid:{color:'rgba(48,54,61,.5)'},
+    border:{color:'#30363d'}
+  };
+}
+
+function renderDoughnut(){
+  const ctx = document.getElementById('doughnutChart').getContext('2d');
+  const top8 = [...CAPITULOS].sort((a,b)=>b.orc-a.orc).slice(0,8);
+  if(chartDoughnut) chartDoughnut.destroy();
+  chartDoughnut = new Chart(ctx,{
+    type:'doughnut',
+    data:{
+      labels: top8.map(c=>c.cod+' '+c.desc.substring(0,16)+'…'),
+      datasets:[{
+        data: top8.map(c=>c.orc),
+        backgroundColor:['#1a73e8','#0dcfb0','#f5a623','#ef4444','#22c55e','#a78bfa','#5ba4ff','#f9a826'],
+        borderWidth:0, hoverOffset:6
+      }]
+    },
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{color:'#8b949e',font:{size:10},boxWidth:10,padding:8}}}}
+  });
+}
+
+function renderBar(){
+  const ctx = document.getElementById('barChart').getContext('2d');
+  const top8 = [...CAPITULOS].sort((a,b)=>b.orc-a.orc).slice(0,8);
+  if(chartBar) chartBar.destroy();
+  chartBar = new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels: top8.map(c=>c.cod),
+      datasets:[
+        {label:'Orçado',    data:top8.map(c=>c.orc),              backgroundColor:'rgba(26,115,232,.55)',borderRadius:4},
+        {label:'Executado', data:top8.map(c=>medidoPorCap(c.cod)),backgroundColor:'rgba(34,197,94,.7)',  borderRadius:4}
+      ]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{labels:{color:'#8b949e',font:{size:11}}}},
+      scales:{x:makeAxisStyle(),y:{...makeAxisStyle(),ticks:{...makeAxisStyle().ticks,callback:v=>'R$'+Math.round(v/1000)+'k'}}}
+    }
+  });
+}
+
+function renderEvolucaoChart(){
+  const ctx = document.getElementById('evolucaoChart').getContext('2d');
+  if(chartEvolucao) chartEvolucao.destroy();
+  if(!medicoes.length) return;
+  const sorted=[...medicoes].sort((a,b)=>a.ts-b.ts);
+  let acc=0;
+  chartEvolucao = new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:sorted.map(m=>m.data||'—'),
+      datasets:[{
+        label:'% Financeiro Acumulado',
+        data:sorted.map(m=>{acc+=m.valor;return parseFloat((acc/TOTAL_ORC*100).toFixed(2));}),
+        borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.1)',fill:true,tension:.4,pointRadius:5,pointBackgroundColor:'#22c55e'
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{labels:{color:'#8b949e',font:{size:11}}}},
+      scales:{x:makeAxisStyle(),y:{...makeAxisStyle(),min:0,ticks:{...makeAxisStyle().ticks,callback:v=>v+'%'}}}
+    }
+  });
+}
+
+/* ══════════════════════════════════
+   EXPORT
+══════════════════════════════════ */
+function exportJSON(){
+  const data={
+    obra:'Igreja Lauro de Freitas Central',
+    gerado:new Date().toISOString(),
+    total_orc:TOTAL_ORC,
+    avanco_fisico:avancoFis,
+    incidentes_contagem:incidentes.length,
+    custo_incidentes:totalCustoIncidentes(),
+    capitulos:CAPITULOS.map(c=>({...c,medido:medidoPorCap(c.cod),saldo:c.orc-medidoPorCap(c.cod)})),
+    medicoes
+  };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='Financeiro_LaurodFreitas.json';a.click();
+}
+
+/* ══════════════════════════════════
+   TABS — função que estava faltando
+══════════════════════════════════ */
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('tab-' + id);
+  if (el) el.classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (id === 'incidentes') carregarIncidentes();
+  if (id === 'curvaS')     renderCurvaS();
+  if (id === 'capitulos')  renderCapitulos();
+  if (id === 'medicao')    renderMedicoes();
+}
+
+/* ══════════════════════════════════
+   INIT
+══════════════════════════════════ */
+function renderAll(){
+  lerLocalStorage();
+  renderKPIs();
+  renderFases();
+  renderCapitulos();
+  renderDoughnut();
+  renderBar();
+}
+
+renderAll();
+
+// Auto-sync a cada 30s (detecta mudanças do Diário de Obra e Dashboard de Obras)
+setInterval(()=>{
+  lerLocalStorage();
+  renderKPIs();
+  renderFases();
+}, 30000);
+</script>
+</body>
+</html>

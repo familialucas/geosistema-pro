@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Manutenção - GeoSistema PRO</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ── GeoSistema PRO — Header Unificado ── */
+        .geo-header{background:#0d1117;border-bottom:1px solid #30363d;padding:0 24px;height:60px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:200;font-family:'Sora',sans-serif;}
+        .geo-logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0;}
+        .geo-logo-icon{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#1a73e8,#0dcfb0);display:grid;place-items:center;font-size:17px;}
+        .geo-logo-name{font-family:'DM Serif Display',serif;font-size:17px;color:#e6edf3;}
+        .geo-logo-sub{font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:1.5px;}
+        .geo-sep{width:1px;height:28px;background:#30363d;margin:0 4px;flex-shrink:0;}
+        .geo-nav{display:flex;gap:4px;}
+        .geo-np{padding:6px 13px;border-radius:6px;border:1px solid #30363d;background:transparent;color:#8b949e;font-size:11px;font-family:'Sora',sans-serif;font-weight:500;text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:all .15s;}
+        .geo-np:hover{border-color:#1a73e8;color:#1a73e8;}
+        .geo-np.geo-active{background:rgba(26,115,232,.15);border-color:#1a73e8;color:#1a73e8;}
+        .geo-badge{background:rgba(245,166,35,.12);color:#f5a623;border:1px solid rgba(245,166,35,.25);border-radius:20px;font-size:10px;padding:3px 11px;font-weight:600;white-space:nowrap;font-family:'Sora',sans-serif;}
+        .geo-btn-print{padding:6px 13px;border-radius:6px;border:1px solid #30363d;background:transparent;color:#8b949e;font-size:11px;font-family:'Sora',sans-serif;font-weight:500;cursor:pointer;transition:all .15s;}
+        .geo-btn-print:hover{border-color:#1a73e8;color:#1a73e8;}
+        @media print{.geo-header{display:none;}}
+        @media(max-width:700px){.geo-nav{display:none;}.geo-badge{display:none;}}
+
+        :root {
+            --primary: #1a73e8;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #d63031;
+            --bg: #f0f2f5;
+            --card: #ffffff;
+            --text: #333;
+            --muted: #666;
+            --border: #e0e0e0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Sora', 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+        .btn { padding: 8px 16px; border-radius: 8px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-outline  { background: white; color: var(--text); border: 1.5px solid var(--border); }
+
+        /* Painel de arquivos */
+        .painel-arquivos {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 24px;
+        }
+        .painel-arquivos-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        .painel-arquivos-header span {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .btn-add {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: var(--primary);
+            color: white;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-limpar-tudo {
+            padding: 6px 14px;
+            background: white;
+            color: var(--danger);
+            border: 1.5px solid var(--danger);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .lista-arquivos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .arquivo-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #e8f0fe;
+            color: #1558b0;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .arquivo-tag button {
+            background: none;
+            border: none;
+            color: #1558b0;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            opacity: 0.7;
+        }
+        .arquivo-tag button:hover { opacity: 1; }
+        .arquivo-tag.erro { background: #ffebee; color: #c62828; }
+        .arquivo-tag.erro button { color: #c62828; }
+
+        .estado-vazio {
+            text-align: center;
+            padding: 80px 24px;
+            color: var(--muted);
+        }
+        .estado-vazio .icone { font-size: 48px; margin-bottom: 16px; }
+        .estado-vazio h2 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
+        .estado-vazio p { font-size: 14px; }
+
+        .dashboard { padding: 24px; display: none; }
+
+        .filtro-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .filtro-bar label { font-size: 13px; color: var(--muted); }
+        .filtro-bar select {
+            font-size: 13px;
+            padding: 6px 10px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            background: white;
+        }
+        .badge-total {
+            font-size: 12px;
+            background: #e8f0fe;
+            color: #1558b0;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .metricas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .metrica-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+        .metrica-card .valor  { font-size: 28px; font-weight: 700; line-height: 1; margin-bottom: 6px; }
+        .metrica-card .rotulo { font-size: 12px; color: var(--muted); }
+        .metrica-card.urgente .valor { color: var(--danger); }
+        .metrica-card.atencao .valor { color: var(--warning); }
+        .metrica-card.ok      .valor { color: var(--success); }
+        .metrica-card.total   .valor { color: var(--primary); }
+
+        .secao-titulo {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--bg);
+        }
+
+        .grid-graficos {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .card-grafico {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border);
+        }
+        .legenda-chart {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .legenda-item { display: flex; align-items: center; gap: 5px; }
+        .legenda-cor  { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+        .card-tabela {
+            background: var(--card);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+        .card-tabela-header { padding: 16px 20px; border-bottom: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th {
+            text-align: left;
+            padding: 10px 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+            background: #fafafa;
+            border-bottom: 1px solid var(--border);
+        }
+        td { padding: 12px 20px; border-bottom: 1px solid #f5f5f5; color: var(--text); vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #fafafa; }
+
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .badge-urgente { background: #ffebee; color: #c62828; }
+        .badge-atencao { background: #fff8e1; color: #e65100; }
+        .badge-normal  { background: #e8f5e9; color: #2e7d32; }
+
+        .tag {
+            display: inline-block;
+            background: #ffebee;
+            color: #c62828;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin: 2px;
+        }
+
+        .card-evolucao {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+        .card-servicos {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+        .servico-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 13px;
+        }
+        .servico-row:last-child { border-bottom: none; }
+        .servico-barra-wrap { display: flex; align-items: center; gap: 10px; flex: 1; margin: 0 16px; }
+        .servico-barra { flex: 1; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+        .servico-barra-fill { height: 100%; background: var(--primary); border-radius: 3px; }
+        .servico-count { font-weight: 600; color: var(--primary); min-width: 30px; text-align: right; }
+
+        .input-oculto { display: none; }
+
+        @media print {
+            .painel-arquivos { display: none; }
+            .filtro-bar { display: none; }
+        }
+        @media (max-width: 600px) {
+            .painel-arquivos { padding: 12px 16px; }
+            .dashboard { padding: 16px; }
+            table { font-size: 12px; }
+            th, td { padding: 10px 12px; }
+        }
+    </style>
+  <!-- ══ PWA GeoSistema PRO ══ -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#0dcfb0">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="GeoSistema PRO">
+  <link rel="apple-touch-icon" href="./assets/icon-192.png">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(r => console.log('SW registrado:', r.scope))
+          .catch(e => console.warn('SW falhou:', e));
+      });
+    }
+  </script>
+</head>
+<body>
+
+    <header class="geo-header">
+      <a class="geo-logo" href="#">
+        <div class="geo-logo-icon">🔧</div>
+        <div>
+          <div class="geo-logo-name">GeoSistema PRO</div>
+          <div class="geo-logo-sub">Dashboard de Manutenção</div>
+        </div>
+      </a>
+      <div class="geo-sep"></div>
+      <nav class="geo-nav">
+        <a class="geo-np" href="Dashboard_obra.html">📋 Encarregado</a>
+        <a class="geo-np" href="Diario_de_Obra_v2.html">🏗️ Obras</a>
+        <a class="geo-np" href="Dashboard_Financeiro.html">💰 Financeiro</a>
+        <a class="geo-np" href="Diario_Manutencao.html">📓 Encarregado</a>
+        <a class="geo-np geo-active" href="#">🔧 Manutenção</a>
+      </nav>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+        <button class="geo-btn-print" onclick="window.print()">🖨️ Imprimir</button>
+        <div class="geo-badge">Simões Filho · BA</div>
+      </div>
+    </header>
+
+    <!-- Painel de gerenciamento de arquivos -->
+    <div class="painel-arquivos">
+        <div class="painel-arquivos-header">
+            <span id="labelArquivos">Nenhum arquivo carregado</span>
+            <button class="btn-add" onclick="document.getElementById('inputJson').click()">+ Adicionar arquivos JSON</button>
+            <button class="btn-add" onclick="carregarDoDispositivo()" style="background:#0dcfb0;border-color:#0dcfb0;" title="Carrega os diários enviados pelo app de manutenção (armazenados neste dispositivo)">📥 Carregar do dispositivo</button>
+            <button class="btn-limpar-tudo" id="btnLimparTudo" onclick="limparTudo()" style="display:none;">🗑️ Limpar tudo</button>
+        </div>
+        <div class="lista-arquivos" id="listaArquivos"></div>
+        <input type="file" id="inputJson" class="input-oculto" accept=".json" multiple>
+    </div>
+
+    <div class="estado-vazio" id="estadoVazio">
+        <div class="icone">📂</div>
+        <h2>Nenhum dado carregado</h2>
+        <p>Clique em <strong>+ Adicionar arquivos JSON</strong> para importar relatórios enviados por WhatsApp, ou em <strong>📥 Carregar do dispositivo</strong> para ler os diários preenchidos no app de manutenção deste dispositivo.</p>
+    </div>
+
+    <div class="dashboard" id="dashboard">
+        <div class="filtro-bar">
+            <label>Filtrar por mês:</label>
+            <select id="filtroMes"><option value="">Todos os meses</option></select>
+            <label>Urgência:</label>
+            <select id="filtroUrgencia">
+                <option value="">Todas</option>
+                <option value="Urgente">Urgente</option>
+                <option value="Atenção">Atenção</option>
+                <option value="Normal">Normal</option>
+            </select>
+            <span class="badge-total" id="badgeTotal">0 vistorias</span>
+        </div>
+
+        <div class="metricas">
+            <div class="metrica-card total">
+                <div class="valor" id="mTotal">0</div>
+                <div class="rotulo">Total de vistorias</div>
+            </div>
+            <div class="metrica-card urgente">
+                <div class="valor" id="mUrgente">0</div>
+                <div class="rotulo">Urgentes</div>
+            </div>
+            <div class="metrica-card atencao">
+                <div class="valor" id="mAtencao">0</div>
+                <div class="rotulo">Atenção</div>
+            </div>
+            <div class="metrica-card ok">
+                <div class="valor" id="mNormal">0</div>
+                <div class="rotulo">Normais</div>
+            </div>
+            <div class="metrica-card urgente">
+                <div class="valor" id="mRisco">0</div>
+                <div class="rotulo">Áreas de risco</div>
+            </div>
+        </div>
+
+        <div class="grid-graficos">
+            <div class="card-grafico">
+                <div class="secao-titulo">Situação do Piso</div>
+                <div class="legenda-chart" id="legPiso"></div>
+                <div style="position:relative;height:180px;"><canvas id="chartPiso"></canvas></div>
+            </div>
+            <div class="card-grafico">
+                <div class="secao-titulo">Situação da Pintura</div>
+                <div class="legenda-chart" id="legPintura"></div>
+                <div style="position:relative;height:180px;"><canvas id="chartPintura"></canvas></div>
+            </div>
+            <div class="card-grafico">
+                <div class="secao-titulo">Condição da Cobertura</div>
+                <div class="legenda-chart" id="legCobertura"></div>
+                <div style="position:relative;height:180px;"><canvas id="chartCobertura"></canvas></div>
+            </div>
+            <div class="card-grafico">
+                <div class="secao-titulo">Acessibilidade</div>
+                <div class="legenda-chart" id="legAcessibilidade"></div>
+                <div style="position:relative;height:180px;"><canvas id="chartAcessibilidade"></canvas></div>
+            </div>
+        </div>
+
+        <div class="card-evolucao">
+            <div class="secao-titulo">Evolução mensal de vistorias</div>
+            <div style="position:relative;height:220px;"><canvas id="chartEvolucao"></canvas></div>
+        </div>
+
+        <div class="card-servicos">
+            <div class="secao-titulo">Serviços mais solicitados</div>
+            <div id="listaServicos"></div>
+        </div>
+
+        <div class="card-tabela">
+            <div class="card-tabela-header">
+                <div class="secao-titulo" style="margin-bottom:0;">Urgências e apontamentos críticos</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Bairro</th>
+                        <th>Data</th>
+                        <th>Urgência</th>
+                        <th>Apontamentos</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaApontamentos"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const COR_BOA     = '#27ae60';
+        const COR_REGULAR = '#f39c12';
+        const COR_RUIM    = '#d63031';
+        const COR_NENHUMA = '#95a5a6';
+
+        // Banco de dados em memória: chave = nome do arquivo, valor = array de vistorias
+        const bancoDados = {};
+        let charts = {};
+
+        // Carrega diários salvos pelo Diario_Manutencao.html via localStorage
+        function carregarDoDispositivo() {
+            let h;
+            try { h = JSON.parse(localStorage.getItem('geo_manutencao_diarios') || '[]'); } catch { h = []; }
+            if (!h.length) {
+                alert('Nenhum diário de manutenção encontrado neste dispositivo.\n\nUse o app "Diário de Manutenção" para registrar os serviços, depois volte aqui.');
+                return;
+            }
+            const chave = '_dispositivo_local_';
+            bancoDados[chave] = h;
+            adicionarTagArquivo(chave, false);
+            renderizar();
+        }
+
+        document.getElementById('inputJson').addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+
+            let pendentes = files.length;
+
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    try {
+                        const parsed = JSON.parse(ev.target.result);
+                        const arr = Array.isArray(parsed) ? parsed : [parsed];
+                        // Acumula — se o arquivo já existia, substitui pela versão nova
+                        bancoDados[file.name] = arr;
+                        adicionarTagArquivo(file.name, false);
+                    } catch(err) {
+                        bancoDados[file.name] = [];
+                        adicionarTagArquivo(file.name, true);
+                    }
+                    pendentes--;
+                    if (pendentes === 0) {
+                        // Reseta o input para permitir recarregar o mesmo arquivo
+                        document.getElementById('inputJson').value = '';
+                        renderizar();
+                    }
+                };
+                reader.readAsText(file);
+            });
+        });
+
+        function adicionarTagArquivo(nome, erro) {
+            // Remove tag anterior do mesmo arquivo se existir
+            const anterior = document.getElementById('tag-' + CSS.escape(nome));
+            if (anterior) anterior.remove();
+
+            const tag = document.createElement('div');
+            tag.className = 'arquivo-tag' + (erro ? ' erro' : '');
+            tag.id = 'tag-' + nome;
+
+            const qtd = erro ? '(erro)' : bancoDados[nome].length + ' vistoria' + (bancoDados[nome].length !== 1 ? 's' : '');
+
+            tag.innerHTML = `
+                <span>${nome} <span style="opacity:0.7">(${qtd})</span></span>
+                <button onclick="removerArquivo('${nome.replace(/'/g, "\\'")}')" title="Remover">✕</button>
+            `;
+            document.getElementById('listaArquivos').appendChild(tag);
+        }
+
+        function removerArquivo(nome) {
+            delete bancoDados[nome];
+            const tag = document.getElementById('tag-' + nome);
+            if (tag) tag.remove();
+            renderizar();
+        }
+
+        function limparTudo() {
+            if (!confirm('Remover todos os arquivos carregados?')) return;
+            Object.keys(bancoDados).forEach(k => delete bancoDados[k]);
+            document.getElementById('listaArquivos').innerHTML = '';
+            renderizar();
+        }
+
+        function todosOsDados() {
+            return Object.values(bancoDados).flat();
+        }
+
+        function renderizar() {
+            const dados = todosOsDados();
+            const total = dados.length;
+            const nArquivos = Object.keys(bancoDados).length;
+
+            // Atualiza label e botão limpar
+            document.getElementById('labelArquivos').textContent =
+                nArquivos === 0
+                    ? 'Nenhum arquivo carregado'
+                    : nArquivos + ' arquivo' + (nArquivos !== 1 ? 's' : '') + ' carregado' + (nArquivos !== 1 ? 's' : '');
+            document.getElementById('btnLimparTudo').style.display = nArquivos > 0 ? 'inline-block' : 'none';
+
+            if (total === 0) {
+                document.getElementById('estadoVazio').style.display = 'block';
+                document.getElementById('dashboard').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('estadoVazio').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+
+            // Atualiza filtro de meses
+            const meses = [...new Set(dados.map(v => mesDeData(v.data)).filter(Boolean))].sort();
+            const selMes = document.getElementById('filtroMes');
+            const mesSelecionado = selMes.value;
+            selMes.innerHTML = '<option value="">Todos os meses</option>';
+            meses.forEach(m => {
+                const op = document.createElement('option');
+                op.value = m;
+                op.textContent = formatarMes(m);
+                if (m === mesSelecionado) op.selected = true;
+                selMes.appendChild(op);
+            });
+
+            selMes.onchange = aplicarFiltros;
+            document.getElementById('filtroUrgencia').onchange = aplicarFiltros;
+
+            aplicarFiltros();
+        }
+
+        function aplicarFiltros() {
+            const filtroMes = document.getElementById('filtroMes').value;
+            const filtroUrg = document.getElementById('filtroUrgencia').value;
+            let dados = todosOsDados();
+            if (filtroMes) dados = dados.filter(v => mesDeData(v.data) === filtroMes);
+            if (filtroUrg) dados = dados.filter(v => (v.nivelUrgencia || 'Normal') === filtroUrg);
+
+            atualizarMetricas(dados);
+            atualizarGraficoPizza('chartPiso',          'legPiso',          dados, 'situacaoPiso');
+            atualizarGraficoPizza('chartPintura',       'legPintura',       dados, 'situacaoPintura');
+            atualizarGraficoPizza('chartCobertura',     'legCobertura',     dados, 'condicaoCobertura');
+            atualizarGraficoPizza('chartAcessibilidade','legAcessibilidade',dados, 'acessibilidade');
+            atualizarEvolucao(dados);
+            atualizarServicos(dados);
+            atualizarTabela(dados);
+
+            document.getElementById('badgeTotal').textContent =
+                dados.length + ' vistoria' + (dados.length !== 1 ? 's' : '');
+        }
+
+        function atualizarMetricas(dados) {
+            document.getElementById('mTotal').textContent   = dados.length;
+            document.getElementById('mUrgente').textContent = dados.filter(v => v.nivelUrgencia === 'Urgente').length;
+            document.getElementById('mAtencao').textContent = dados.filter(v => v.nivelUrgencia === 'Atenção').length;
+            document.getElementById('mNormal').textContent  = dados.filter(v => !v.nivelUrgencia || v.nivelUrgencia === 'Normal').length;
+            document.getElementById('mRisco').textContent   = dados.filter(v => v.apontamento && v.apontamento.includes('Área de risco')).length;
+        }
+
+        function coresPorValor(labels) {
+            return labels.map(l => {
+                if (['Boa'].includes(l)) return COR_BOA;
+                if (['Regular','Pouca','Com infiltração'].includes(l)) return COR_REGULAR;
+                if (['Ruim','Nenhuma','Danificada'].includes(l)) return COR_RUIM;
+                return COR_NENHUMA;
+            });
+        }
+
+        function atualizarGraficoPizza(canvasId, legId, dados, campo) {
+            const contagem = {};
+            dados.forEach(v => {
+                const val = v[campo] || 'Não informado';
+                contagem[val] = (contagem[val] || 0) + 1;
+            });
+            const labels = Object.keys(contagem);
+            const values = Object.values(contagem);
+            const cores  = coresPorValor(labels);
+            const total  = dados.length || 1;
+
+            document.getElementById(legId).innerHTML = labels.map((l, i) =>
+                `<span class="legenda-item"><span class="legenda-cor" style="background:${cores[i]}"></span>${l} (${values[i]})</span>`
+            ).join('');
+
+            if (charts[canvasId]) charts[canvasId].destroy();
+            charts[canvasId] = new Chart(document.getElementById(canvasId), {
+                type: 'doughnut',
+                data: {
+                    labels,
+                    datasets: [{ data: values, backgroundColor: cores, borderWidth: 2, borderColor: '#fff' }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => ` ${ctx.label}: ${ctx.raw} (${Math.round(ctx.raw / total * 100)}%)`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function atualizarEvolucao(dados) {
+            const porMes = {};
+            dados.forEach(v => {
+                const m = mesDeData(v.data);
+                if (m) porMes[m] = (porMes[m] || 0) + 1;
+            });
+            const mesesOrdenados = Object.keys(porMes).sort();
+
+            if (charts['chartEvolucao']) charts['chartEvolucao'].destroy();
+            charts['chartEvolucao'] = new Chart(document.getElementById('chartEvolucao'), {
+                type: 'bar',
+                data: {
+                    labels: mesesOrdenados.map(formatarMes),
+                    datasets: [{
+                        label: 'Vistorias',
+                        data: mesesOrdenados.map(m => porMes[m]),
+                        backgroundColor: '#1a73e8',
+                        borderRadius: 6,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { autoSkip: false } },
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    }
+                }
+            });
+        }
+
+        function atualizarServicos(dados) {
+            const contagem = {};
+            dados.forEach(v => {
+                (v.servico || []).forEach(s => { contagem[s] = (contagem[s] || 0) + 1; });
+            });
+            const ordenado = Object.entries(contagem).sort((a, b) => b[1] - a[1]);
+            const max = ordenado.length > 0 ? ordenado[0][1] : 1;
+            const lista = document.getElementById('listaServicos');
+
+            if (ordenado.length === 0) {
+                lista.innerHTML = '<p style="font-size:13px;color:#999;text-align:center;padding:20px 0;">Nenhum serviço registrado.</p>';
+                return;
+            }
+            lista.innerHTML = ordenado.map(([nome, qt]) => `
+                <div class="servico-row">
+                    <span style="min-width:140px;">${nome}</span>
+                    <div class="servico-barra-wrap">
+                        <div class="servico-barra">
+                            <div class="servico-barra-fill" style="width:${Math.round(qt / max * 100)}%"></div>
+                        </div>
+                    </div>
+                    <span class="servico-count">${qt}</span>
+                </div>
+            `).join('');
+        }
+
+        function atualizarTabela(dados) {
+            const criticos = dados
+                .filter(v => v.nivelUrgencia === 'Urgente' || v.nivelUrgencia === 'Atenção' || (v.apontamento && v.apontamento.length > 0))
+                .sort((a, b) => {
+                    const ord = { 'Urgente': 0, 'Atenção': 1, 'Normal': 2 };
+                    return (ord[a.nivelUrgencia] || 2) - (ord[b.nivelUrgencia] || 2);
+                });
+
+            const tbody = document.getElementById('tabelaApontamentos');
+            if (criticos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#999;padding:24px;">Nenhuma urgência ou apontamento crítico encontrado.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = criticos.map(v => {
+                const urg = v.nivelUrgencia || 'Normal';
+                const badgeClass = urg === 'Urgente' ? 'badge-urgente' : urg === 'Atenção' ? 'badge-atencao' : 'badge-normal';
+                const aponts = (v.apontamento || []).map(a => `<span class="tag">${a}</span>`).join('') || '—';
+                return `<tr>
+                    <td style="font-weight:600;color:#1a73e8;">${v.codigoEdificacao || '—'}</td>
+                    <td>${v.bairro || '—'}</td>
+                    <td>${v.data || '—'}</td>
+                    <td><span class="badge ${badgeClass}">${urg}</span></td>
+                    <td>${aponts}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function mesDeData(dataStr) {
+            if (!dataStr) return null;
+            const p = dataStr.split('/');
+            return p.length === 3 ? p[2] + '-' + p[1] : null;
+        }
+
+        const MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+        function formatarMes(yyyymm) {
+            if (!yyyymm) return yyyymm;
+            const [ano, mes] = yyyymm.split('-');
+            return MESES[parseInt(mes, 10) - 1] + '/' + ano;
+        }
+    </script>
+</body>
+</html>

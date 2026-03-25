@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatórios de Vistoria - GeoSistema PRO</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 30px; }
+        .no-print { background: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .no-print h1 { margin: 0 0 15px 0; color: #1a73e8; font-size: 20px; }
+        .pagina-a4 { background: white; width: 210mm; min-height: 290mm; padding: 15mm; margin: 0 auto 20px auto; border: 1px solid #ddd; box-sizing: border-box; page-break-after: always; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
+
+        /* Cabeçalho */
+        .header { border-bottom: 3px solid #1a73e8; padding-bottom: 10px; margin-bottom: 20px; }
+        .header h1 { color: #1a73e8; margin: 0 0 4px 0; font-size: 20px; }
+        .header .subtitulo { color: #555; font-size: 13px; margin: 0; }
+        .header-meta { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: #777; }
+
+        /* Badge de urgência */
+        .badge-urgencia { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .badge-Normal   { background: #e8f5e9; color: #2e7d32; }
+        .badge-Atencao  { background: #fff8e1; color: #f57f17; }
+        .badge-Urgente  { background: #ffebee; color: #c62828; }
+
+        /* Grid de dados técnicos */
+        .grid-tecnico { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; background: #f8f9fa; padding: 15px; border-radius: 5px; font-size: 13px; border: 1px solid #eee; margin-bottom: 16px; }
+        .campo { display: flex; gap: 5px; }
+        .campo .label { font-weight: bold; color: #333; white-space: nowrap; }
+        .campo .valor { color: #555; }
+
+        /* Boxes de listas */
+        .info-box { margin: 0 0 14px 0; padding: 12px 15px; font-size: 13px; border-radius: 0 5px 5px 0; }
+        .box-verde    { border-left: 5px solid #27ae60; background: #fafffa; }
+        .box-verde b  { color: #1e8449; }
+        .box-laranja  { border-left: 5px solid #f39c12; background: #fffdf5; }
+        .box-laranja b{ color: #b7770d; }
+        .box-azul     { border-left: 5px solid #1a73e8; background: #f0f7ff; }
+        .box-azul b   { color: #1558b0; }
+        .box-vermelho { border-left: 5px solid #d63031; background: #fff5f5; }
+        .box-vermelho b { color: #b71c1c; }
+
+        /* Fotos */
+        .foto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
+        .foto-card { border: 1px solid #ddd; padding: 5px; text-align: center; background: #fff; border-radius: 3px; }
+        .foto-card img { width: 100%; height: 200px; object-fit: cover; border-radius: 2px; display: block; }
+        .foto-card span { display: block; font-size: 11px; font-weight: bold; color: #555; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .foto-card.critica { border-color: #e74c3c; }
+        .foto-card.critica span { color: #e74c3c; }
+
+        .secao-titulo { color: #1a73e8; border-bottom: 1px solid #eee; padding-bottom: 5px; margin: 20px 0 10px 0; font-size: 14px; }
+        .secao-titulo.critica { color: #e74c3c; border-bottom-color: #fcc; }
+
+        @media print {
+            .no-print { display: none; }
+            body { padding: 0; background: white; }
+            .pagina-a4 { border: none; margin: 0; width: 100%; box-shadow: none; padding: 10mm; }
+        }
+    </style>
+  <!-- ══ PWA GeoSistema PRO ══ -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#1a73e8">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="GeoSistema PRO">
+  <link rel="apple-touch-icon" href="./assets/icon-192.png">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(r => console.log('SW registrado:', r.scope))
+          .catch(e => console.warn('SW falhou:', e));
+      });
+    }
+  </script>
+</head>
+<body>
+    <div class="no-print">
+        <h1>📋 Gerador de Relatórios Técnicos</h1>
+        <input type="file" id="inputJson" accept=".json" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+        <button onclick="window.print()" style="padding: 10px 25px; background: #1a73e8; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-left: 10px;">🖨️ Imprimir / Salvar PDF</button>
+    </div>
+    <div id="containerRelatorios"></div>
+
+    <script>
+        document.getElementById('inputJson').addEventListener('change', function(e) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const dados = JSON.parse(event.target.result);
+                    const vistorias = Array.isArray(dados) ? dados : [dados];
+                    const container = document.getElementById('containerRelatorios');
+                    container.innerHTML = '';
+
+                    vistorias.forEach(v => {
+
+                        // Badge de urgência
+                        const urgencia = v.nivelUrgencia || 'Normal';
+                        const badgeClass = urgencia === 'Urgente' ? 'badge-Urgente' : urgencia === 'Atenção' ? 'badge-Atencao' : 'badge-Normal';
+                        const badgeHtml = `<span class="badge-urgencia ${badgeClass}">${urgencia}</span>`;
+
+                        // Campos técnicos
+                        const campos = [
+                            { label: 'Bairro',        valor: v.bairro },
+                            { label: 'Zoneamento',     valor: v.zoneamento },
+                            { label: 'Estrutura',      valor: v.tipoEstrutura },
+                            { label: 'Corredores',     valor: v.espacamentoCorredores },
+                            { label: 'Piso',           valor: v.situacaoPiso },
+                            { label: 'Pintura',        valor: v.situacaoPintura },
+                            { label: 'Cobertura',      valor: v.condicaoCobertura },
+                            { label: 'Acessibilidade', valor: v.acessibilidade },
+                            { label: 'Alvará',         valor: v.possuiAlvara },
+                            { label: 'AVCB',           valor: v.avcb },
+                            { label: 'Estacionamento', valor: v.possuiEstacionamento },
+                            { label: 'Data',           valor: v.data },
+                        ];
+
+                        const gridHtml = campos
+                            .filter(c => c.valor)
+                            .map(c => `<div class="campo"><span class="label">${c.label}:</span><span class="valor">${c.valor}</span></div>`)
+                            .join('');
+
+                        // Apontamentos (recuos, área de risco)
+                        const apontamentosHtml = (v.apontamento && v.apontamento.length > 0)
+                            ? `<div class="info-box box-vermelho"><b>⚠️ Apontamentos:</b> ${v.apontamento.join(' • ')}</div>`
+                            : '';
+
+                        // Dependências
+                        const dependenciasHtml = (v.dependencia && v.dependencia.length > 0)
+                            ? `<div class="info-box box-azul"><b>🏛️ Dependências:</b> ${v.dependencia.join(' • ')}</div>`
+                            : '';
+
+                        // Checklist de serviços
+                        const servicos = (v.servico && v.servico.length > 0)
+                            ? v.servico.join(', ')
+                            : 'Nenhum serviço marcado';
+
+                        // Observações
+                        const obsHtml = v.servicoExecutado
+                            ? `<div class="info-box box-laranja"><b>Observações:</b> ${v.servicoExecutado}</div>`
+                            : '';
+
+                        let html = `<div class="pagina-a4">
+                            <div class="header">
+                                <h1>Relatório de Manutenção ${badgeHtml}</h1>
+                                <p class="subtitulo">Simões Filho</p>
+                                <div class="header-meta">
+                                    <span><b>ID:</b> ${v.codigoEdificacao || '—'}</span>
+                                    <span>${v.data || ''}</span>
+                                </div>
+                            </div>
+
+                            <div class="grid-tecnico">${gridHtml}</div>
+
+                            ${apontamentosHtml}
+                            ${dependenciasHtml}
+
+                            <div class="info-box box-verde"><b>Checklist:</b> ${servicos}</div>
+
+                            ${obsHtml}
+
+                            <h3 class="secao-titulo">📷 Anexo Fotográfico</h3>
+                            <div class="foto-grid">`;
+
+                        // Fotos fixas
+                        const fixas = {
+                            imagemFachada: 'Fachada',
+                            imagemPiso:    'Piso',
+                            imagemQuadro:  'Elétrica',
+                            imagemForro:   'Forro',
+                            imagemPintura: 'Pintura',
+                            imagemAcesso:  'Acesso'
+                        };
+
+                        Object.entries(fixas).forEach(([key, label]) => {
+                            if (v[key]) {
+                                html += `<div class="foto-card">
+                                    <img src="${v[key]}" alt="${label}">
+                                    <span>${label}</span>
+                                </div>`;
+                            }
+                        });
+
+                        html += `</div>`;
+
+                        // Fotos extras
+                        if (v.fotosAdicionais && v.fotosAdicionais.length > 0) {
+                            html += `<h3 class="secao-titulo critica">⚠️ Ocorrências Críticas</h3>
+                                     <div class="foto-grid">`;
+                            v.fotosAdicionais.forEach((f, i) => {
+                                html += `<div class="foto-card critica">
+                                    <img src="${f}" alt="Ocorrência ${i + 1}">
+                                    <span>Evidência ${i + 1}</span>
+                                </div>`;
+                            });
+                            html += `</div>`;
+                        }
+
+                        html += `</div>`;
+                        container.innerHTML += html;
+                    });
+
+                } catch (err) {
+                    alert("❌ Erro ao ler o arquivo JSON. Verifique se o arquivo está correto.");
+                    console.error(err);
+                }
+            };
+            reader.readAsText(e.target.files[0]);
+        });
+    </script>
+</body>
+</html>
