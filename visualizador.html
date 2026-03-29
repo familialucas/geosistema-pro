@@ -134,9 +134,10 @@
                             ? v.servico.join(', ')
                             : 'Nenhum serviço marcado';
 
-                        // Observações
-                        const obsHtml = v.servicoExecutado
-                            ? `<div class="info-box box-laranja"><b>Observações:</b> ${v.servicoExecutado}</div>`
+                        // Observações — suporte a ambos os campos
+                        const obsTexto = v.servicoExecutado || v.observacoes || '';
+                        const obsHtml = obsTexto
+                            ? `<div class="info-box box-laranja"><b>Observações:</b> ${obsTexto}</div>`
                             : '';
 
                         let html = `<div class="pagina-a4">
@@ -161,7 +162,7 @@
                             <h3 class="secao-titulo">📷 Anexo Fotográfico</h3>
                             <div class="foto-grid">`;
 
-                        // Fotos fixas
+                        // ── Fotos fixas (campos individuais, formato legado) ──
                         const fixas = {
                             imagemFachada: 'Fachada',
                             imagemPiso:    'Piso',
@@ -180,9 +181,20 @@
                             }
                         });
 
+                        // ── CORREÇÃO: fotosManutencao (array de base64) ──
+                        const fotosManutencao = v.fotosManutencao || [];
+                        fotosManutencao.forEach((src, i) => {
+                            if (src) {
+                                html += `<div class="foto-card">
+                                    <img src="${src}" alt="Foto ${i + 1}">
+                                    <span>Foto ${i + 1}</span>
+                                </div>`;
+                            }
+                        });
+
                         html += `</div>`;
 
-                        // Fotos extras
+                        // ── Fotos extras / ocorrências críticas ──
                         if (v.fotosAdicionais && v.fotosAdicionais.length > 0) {
                             html += `<h3 class="secao-titulo critica">⚠️ Ocorrências Críticas</h3>
                                      <div class="foto-grid">`;
