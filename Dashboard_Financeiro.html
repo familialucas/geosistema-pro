@@ -26,6 +26,8 @@
 body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
 
 /* ══ HEADER UNIFICADO ══ */
+.h-back-fin{width:32px;height:32px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;display:grid;place-items:center;color:#e6edf3;font-size:18px;text-decoration:none;flex-shrink:0;margin-right:4px;}
+.h-back-fin:hover{background:rgba(255,255,255,.15);}
 header{background:rgba(13,17,23,.97);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);}
 .logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0;}
 .logo-icon{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#1a73e8,#0dcfb0);display:grid;place-items:center;font-size:17px;}
@@ -216,6 +218,7 @@ canvas{max-height:280px;}
 
 <!-- ══════════ HEADER UNIFICADO ══════════ -->
 <header>
+  <a href="./home.html" class="h-back-fin" title="Voltar">‹</a>
   <a class="logo" href="#">
     <div class="logo-icon">💰</div>
     <div>

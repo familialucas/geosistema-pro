@@ -267,24 +267,60 @@ const LS={
 // ── Obra ativa — sincroniza com Diario_de_Obra_v2 ──
 function getObraAtiva(){return LS.get('geo_obra_ativa','obra_default');}
 function lsObra(chave){return chave+'_'+getObraAtiva();}
+const OBRAS_SEED = [
+  {id:'obra_default',   nome:'Igreja Lauro de Freitas Central', tipo:'construcao', local:'Lauro de Freitas / BA', codigo:'BR 04 1599'},
+  {id:'obra_CIA',       nome:'Igreja Simões Filho — CIA',         tipo:'construcao', local:'CIA / Simões Filho',          codigo:'BR 040281'},
+  {id:'obra_CoroaLagoa',nome:'Igreja Coroa da Lagoa',             tipo:'construcao', local:'Coroa da Lagoa / Simões Filho',codigo:'BR 04 0767'},
+  {id:'obra_Covel',     nome:'Igreja Covel',                      tipo:'construcao', local:'Covel / Simões Filho',         codigo:'BR 04 2566'},
+  {id:'obra_IlhaSJ',    nome:'Igreja Ilha de São João',           tipo:'construcao', local:'Ilha de São João / Simões Filho',codigo:'BR 04 0934'},
+  {id:'obra_LuizEd',    nome:'Igreja Luiz Eduardo',               tipo:'construcao', local:'Luiz Eduardo / Simões Filho',  codigo:'BR 04 0533'},
+  {id:'obra_Mapele',    nome:'Igreja Mapele',                     tipo:'construcao', local:'Mapele / Simões Filho',        codigo:'BR 04 1760'},
+  {id:'obra_NovaPit',   nome:'Igreja Nova Pitanguinha',           tipo:'construcao', local:'Nova Pitanguinha / Simões Filho',codigo:'BR 04 0480'},
+  {id:'obra_Palmares',  nome:'Igreja Palmares',                   tipo:'construcao', local:'Palmares / Simões Filho',      codigo:'BR 04 1732'},
+  {id:'obra_PontoPar',  nome:'Igreja Ponto Parada',               tipo:'construcao', local:'Ponto Parada / Simões Filho',  codigo:'BR 04 2372'},
+  {id:'obra_StoAnt',    nome:'Igreja Santo Antônio Rios das Pedras',tipo:'construcao',local:'Rios das Pedras / Simões Filho',codigo:'BR 04 1613'},
+  {id:'obra_SF1',       nome:'Igreja Simões Filho 1',             tipo:'construcao', local:'Simões Filho 1 / Simões Filho',codigo:'BR 04 2139'},
+  {id:'obra_AreiaB',    nome:'Igreja Areia Branca',               tipo:'construcao', local:'Areia Branca / Lauro de Freitas',codigo:'BR 04 1466'},
+  {id:'obra_Caic',      nome:'Igreja Caic',                       tipo:'reforma',    local:'Caic / Lauro de Freitas',      codigo:'BR 04 1599'},
+  {id:'obra_Itinga',    nome:'Igreja Itinga',                     tipo:'construcao', local:'Itinga / Lauro de Freitas',    codigo:'BR 04 0475'},
+  {id:'obra_PqSP',      nome:'Igreja Pq São Paulo',               tipo:'construcao', local:'Pq São Paulo / Lauro de Freitas',codigo:'BR 04 1176'},
+  {id:'obra_Portao',    nome:'Igreja Portão',                     tipo:'construcao', local:'Portão / Lauro de Freitas',    codigo:'BR 04 1103'},
+  {id:'obra_Ipitanga',  nome:'Igreja Praia de Ipitanga',          tipo:'construcao', local:'Praia de Ipitanga / Lauro de Freitas',codigo:'BR 04 1055'},
+  {id:'obra_VidaNova',  nome:'Igreja Vida Nova',                  tipo:'construcao', local:'Vida Nova / Lauro de Freitas', codigo:'BR 04 1806'},
+];
+
+// Inicializa geo_obras com o seed se ainda não existir
+(function initObras(){
+  const existing = LS.get('geo_obras', null);
+  if (!existing || existing.length === 0) {
+    LS.set('geo_obras', OBRAS_SEED);
+  }
+})();
+
 function getObraInfo(){
-  const obras=LS.get('geo_obras',[
-    {id:'obra_default',nome:'Igreja Lauro de Freitas Central',tipo:'construcao'}
-  ]);
-  return obras.find(o=>o.id===getObraAtiva())||obras[0];
+  const obras = LS.get('geo_obras', OBRAS_SEED);
+  return obras.find(o=>o.id===getObraAtiva()) || obras[0];
 }
 
 // Popula o seletor de obra no header (só obras cadastradas no Dashboard)
 function popularObraSelect(){
   const sel=document.getElementById('obraSelect');
   if(!sel)return;
-  const obras=LS.get('geo_obras',[
-    {id:'obra_default',nome:'Igreja Lauro de Freitas Central',tipo:'construcao'}
-  ]);
-  const ativa=getObraAtiva();
-  sel.innerHTML=obras.map(o=>
-    `<option value="${o.id}" ${o.id===ativa?'selected':''}>${o.tipo==='reforma'?'🔧':'🏗️'} ${o.nome}</option>`
-  ).join('');
+  const obras = LS.get('geo_obras', OBRAS_SEED);
+  const ativa = getObraAtiva();
+  // Agrupar por cidade
+  const sf    = obras.filter(o=>o.local&&o.local.includes('Simões Filho'));
+  const lf    = obras.filter(o=>o.local&&o.local.includes('Lauro de Freitas'));
+  const outros= obras.filter(o=>!o.local||(!o.local.includes('Simões Filho')&&!o.local.includes('Lauro de Freitas')));
+  function optGroup(label, lista){
+    if(!lista.length) return '';
+    return `<optgroup label="${label}">`+
+      lista.map(o=>`<option value="${o.id}" ${o.id===ativa?'selected':''}>${o.tipo==='reforma'?'🔧':'🏗️'} ${o.nome}${o.codigo?' — '+o.codigo:''}</option>`).join('')+
+      '</optgroup>';
+  }
+  sel.innerHTML = optGroup('Simões Filho', sf) +
+                  optGroup('Lauro de Freitas', lf) +
+                  (outros.length ? optGroup('Outros', outros) : '');
   // Atualiza tipo no state ao trocar obra
   const obra=getObraInfo();
   if(obra) S.tipoObra=obra.tipo;

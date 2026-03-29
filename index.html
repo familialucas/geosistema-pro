@@ -1,247 +1,453 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vistoria Pro - GeoSistema</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="css/style.css">
-  <!-- ══ PWA GeoSistema PRO ══ -->
-  <link rel="manifest" href="./manifest.json">
-  <meta name="theme-color" content="#2980b9">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="GeoSistema PRO">
-  <link rel="apple-touch-icon" href="./assets/icon-192.png">
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .then(r => console.log('SW registrado:', r.scope))
-          .catch(e => console.warn('SW falhou:', e));
-      });
-    }
-  </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Vistoria de Edificações — GeoSistema PRO</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#1a73e8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GeoSistema PRO">
+<link rel="apple-touch-icon" href="./assets/icon-192.png">
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(r => console.log('SW registrado:', r.scope))
+        .catch(e => console.warn('SW falhou:', e));
+    });
+  }
+</script>
+<style>
+:root{
+  --bg:#f0f4f8;--sur:#fff;--brd:#e2e8f0;
+  --blue:#1a73e8;--blue-lt:#e8f0fd;--blue-dk:#1558b0;
+  --teal:#0dcfb0;--teal-lt:#e0f7f3;
+  --amber:#f59e0b;--amber-lt:#fef3c7;
+  --red:#ef4444;--red-lt:#fee2e2;
+  --green:#22c55e;--green-lt:#dcfce7;
+  --text:#1e293b;--muted:#64748b;
+  --r:14px;--sh:0 2px 16px rgba(0,0,0,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:110px;}
+
+/* ── HEADER ── */
+.app-header{background:var(--blue-dk);padding:16px 20px 0;}
+.h-top{display:flex;align-items:center;gap:10px;}
+.h-back{width:34px;height:34px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:9px;display:grid;place-items:center;color:#fff;font-size:18px;text-decoration:none;flex-shrink:0;transition:background .15s;}
+.h-back:active{background:rgba(255,255,255,.3);}
+.h-logo{display:flex;align-items:center;gap:10px;flex:1;}
+.h-icon{width:38px;height:38px;background:rgba(255,255,255,.2);border-radius:10px;display:grid;place-items:center;font-size:20px;}
+.h-title{color:#fff;font-size:17px;font-weight:700;line-height:1.1;}
+.h-sub{color:rgba(255,255,255,.7);font-size:11px;}
+.h-nav{display:flex;gap:5px;}
+.h-nav a{color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:5px 9px;border-radius:6px;text-decoration:none;border:1px solid rgba(255,255,255,.2);}
+.wave{height:18px;background:var(--blue-dk);clip-path:ellipse(55% 100% at 50% 0%);margin-bottom:-1px;}
+
+/* ── CONTENT ── */
+.content{padding:16px;max-width:480px;margin:0 auto;}
+
+/* ── CARDS ── */
+.sc{background:var(--sur);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:14px;overflow:hidden;border:1px solid var(--brd);animation:su .3s ease both;}
+@keyframes su{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.sc:nth-child(2){animation-delay:.05s;}.sc:nth-child(3){animation-delay:.1s;}.sc:nth-child(4){animation-delay:.15s;}.sc:nth-child(5){animation-delay:.2s;}.sc:nth-child(6){animation-delay:.25s;}.sc:nth-child(7){animation-delay:.3s;}
+.sc-h{padding:14px 18px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:10px;}
+.sc-ico{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:17px;flex-shrink:0;}
+.ib{background:var(--blue-lt);}.ia{background:var(--amber-lt);}.ir{background:var(--red-lt);}.ig{background:var(--green-lt);}
+.sc-title{font-size:14px;font-weight:700;}
+.sc-sub{font-size:11px;color:var(--muted);}
+.sc-b{padding:16px 18px;}
+.fg{margin-bottom:13px;}
+.fg:last-child{margin-bottom:0;}
+label.fl{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px;}
+input,select,textarea{width:100%;padding:10px 13px;background:var(--bg);border:1.5px solid var(--brd);border-radius:10px;color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;outline:none;transition:border-color .2s;-webkit-appearance:none;}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,115,232,.1);}
+input[readonly]{color:var(--muted);background:#f8fafc;}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+
+/* ── MAPA ── */
+#mapa{width:100%;height:220px;border-radius:10px;border:1.5px solid var(--brd);margin-top:8px;overflow:hidden;}
+
+/* ── URGÊNCIA ── */
+.urg-grid{display:flex;gap:8px;}
+.urg-btn{flex:1;padding:10px 8px;border-radius:9px;border:1.5px solid var(--brd);background:var(--bg);font-size:12px;font-weight:700;cursor:pointer;text-align:center;-webkit-user-select:none;user-select:none;transition:all .15s;font-family:'Outfit',sans-serif;}
+.urg-normal.sel{background:var(--green-lt);border-color:var(--green);color:#15803d;}
+.urg-atencao.sel{background:var(--amber-lt);border-color:var(--amber);color:#92400e;}
+.urg-urgente.sel{background:var(--red-lt);border-color:var(--red);color:#991b1b;}
+
+/* ── CHECK ITEMS ── */
+.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:4px;}
+.check-item{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--brd);background:var(--bg);cursor:pointer;-webkit-user-select:none;user-select:none;transition:all .15s;}
+.check-item.chk{border-color:var(--blue);background:var(--blue-lt);}
+.check-item.chk-risco{border-color:var(--red)!important;background:var(--red-lt)!important;}
+.check-box{width:20px;height:20px;border-radius:5px;border:2px solid var(--brd);flex-shrink:0;display:grid;place-items:center;font-size:11px;transition:all .15s;}
+.check-item.chk .check-box{background:var(--blue);border-color:var(--blue);color:#fff;}
+.check-item.chk-risco .check-box{background:var(--red)!important;border-color:var(--red)!important;color:#fff;}
+.check-lbl{font-size:12px;font-weight:600;line-height:1.3;}
+
+/* ── SERVIÇOS ── */
+.serv-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;}
+.serv-btn{padding:11px 10px;border-radius:10px;border:1.5px solid var(--brd);background:var(--bg);font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;cursor:pointer;text-align:center;line-height:1.4;transition:all .15s;-webkit-user-select:none;user-select:none;}
+.serv-btn.sel{background:var(--blue-lt);border-color:var(--blue);color:#1558b0;}
+.serv-btn .sb-ico{font-size:20px;display:block;margin-bottom:4px;}
+.serv-btn .sb-lbl{font-size:11px;font-weight:700;}
+
+/* ── FOTOS ── */
+.foto-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.foto-slot{background:var(--bg);border:1.5px dashed var(--brd);border-radius:10px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;overflow:hidden;position:relative;transition:all .2s;}
+.foto-slot.filled{border-style:solid;border-color:var(--blue);}
+.foto-slot.filled-danger{border-style:solid;border-color:var(--red);}
+.foto-slot img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
+.foto-slot .fs-ico{font-size:22px;position:relative;z-index:1;}
+.foto-slot .fs-lbl{font-size:10px;font-weight:600;color:var(--muted);text-align:center;padding:0 4px;position:relative;z-index:1;}
+.foto-slot input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:2;}
+.foto-slot .fs-chk{position:absolute;top:4px;right:4px;width:20px;height:20px;background:var(--blue);border-radius:50%;display:grid;place-items:center;color:#fff;font-size:10px;z-index:3;}
+.foto-slot.filled-danger .fs-chk{background:var(--red);}
+
+/* ── BOTTOM BAR ── */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--sur);border-top:1px solid var(--brd);padding:12px 16px;display:flex;flex-direction:column;gap:8px;box-shadow:0 -4px 20px rgba(0,0,0,.08);}
+.btn-save{padding:14px;border-radius:12px;border:none;background:var(--blue);color:#fff;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;width:100%;}
+.btn-save:active{background:var(--blue-dk);}
+.btn-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.btn-sec{padding:12px 8px;border-radius:10px;border:none;color:#fff;font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;}
+.btn-wa{background:#25d366;}.btn-exp{background:#5f6368;}.btn-clr{background:var(--red);}
+
+/* ── TOAST ── */
+.toast{position:fixed;top:72px;left:50%;transform:translateX(-50%) translateY(-14px);background:#1e293b;color:#fff;padding:9px 20px;border-radius:99px;font-size:13px;font-weight:600;opacity:0;transition:all .25s;z-index:300;white-space:nowrap;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+@media(min-width:480px){.content{margin:0 auto;}.bottom-bar{max-width:480px;left:50%;transform:translateX(-50%);}}
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>Vistoria de Edificações</h1>
-        
-        <form id="vistoriaForm">
+<div class="toast" id="toast"></div>
 
-            <!-- ===== DADOS GERAIS ===== -->
-            <div class="section">
-                <h2 class="section-title">Dados Gerais</h2>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Bairro:</label>
-                        <select id="bairro" name="bairro" required><option value="">Selecione...</option></select>
-                    </div>
-                    <div class="form-group">
-                        <label>Código:</label>
-                        <input type="text" id="codigoEdificacao" name="codigoEdificacao" readonly>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Cidade:</label>
-                    <input type="text" id="cidade" name="cidade" readonly>
-                </div>
-                <div id="mapa"></div>
-                <input type="hidden" id="latitude" name="latitude">
-                <input type="hidden" id="longitude" name="longitude">
-            </div>
-
-            <!-- ===== CARACTERÍSTICAS TÉCNICAS ===== -->
-            <div class="section">
-                <h2 class="section-title">Características Técnicas</h2>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Zoneamento:</label>
-                        <input type="text" name="zoneamento" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Tipo de Estrutura:</label>
-                        <select name="tipoEstrutura">
-                            <option value="Alvenaria">Alvenaria</option>
-                            <option value="Metálica">Metálica</option>
-                            <option value="Mista">Mista</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Alvará:</label>
-                        <select name="possuiAlvara">
-                            <option value="Sim">Sim</option>
-                            <option value="Não">Não</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>AVCB (Corpo de Bombeiros):</label>
-                        <select name="avcb">
-                            <option value="Sim">Sim</option>
-                            <option value="Não">Não</option>
-                            <option value="Vencido">Vencido</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Estacionamento:</label>
-                        <select name="possuiEstacionamento">
-                            <option value="Sim">Sim</option>
-                            <option value="Não">Não</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Espaçamento Corredores:</label>
-                        <select name="espacamentoCorredores">
-                            <option value="Maior que 1.2m">Maior que 1.2m</option>
-                            <option value="Menor que 1.0m">Menor que 1.0m</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Situação do Piso:</label>
-                        <select name="situacaoPiso">
-                            <option value="Boa">Boa</option>
-                            <option value="Regular">Regular</option>
-                            <option value="Ruim">Ruim</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Situação da Pintura:</label>
-                        <select name="situacaoPintura">
-                            <option value="Boa">Boa</option>
-                            <option value="Regular">Regular</option>
-                            <option value="Ruim">Ruim</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Condição da Cobertura:</label>
-                        <select name="condicaoCobertura">
-                            <option value="Boa">Boa</option>
-                            <option value="Com infiltração">Com infiltração</option>
-                            <option value="Danificada">Danificada</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Acessibilidade:</label>
-                        <select name="acessibilidade">
-                            <option value="Boa">Boa</option>
-                            <option value="Pouca">Pouca</option>
-                            <option value="Nenhuma">Nenhuma</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Nível de Urgência:</label>
-                        <select name="nivelUrgencia" class="select-urgencia">
-                            <option value="Normal">Normal</option>
-                            <option value="Atenção">Atenção</option>
-                            <option value="Urgente">Urgente</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Apontamentos de Recuo -->
-                <div class="form-group" style="margin-top: 5px;">
-                    <label>Recuo:</label>
-                    <div class="checklist checklist-inline">
-                        <label><input type="checkbox" name="apontamento" value="Sem recuo lateral"> Sem recuo lateral</label>
-                        <label><input type="checkbox" name="apontamento" value="Sem recuo de fundo"> Sem recuo de fundo</label>
-                    </div>
-                </div>
-
-                <!-- Apontamento: Área de Risco -->
-                <div class="form-group">
-                    <label>Situação de Risco:</label>
-                    <div class="checklist checklist-inline">
-                        <label class="label-risco"><input type="checkbox" name="apontamento" value="Área de risco"> ⚠️ Área de risco</label>
-                    </div>
-                </div>
-
-                <!-- Outras Dependências -->
-                <div class="form-group">
-                    <label>Outras Dependências:</label>
-                    <div class="checklist checklist-inline">
-                        <label><input type="checkbox" name="dependencia" value="Fundo Bíblico"> Fundo Bíblico</label>
-                        <label><input type="checkbox" name="dependencia" value="EBI"> EBI</label>
-                        <label><input type="checkbox" name="dependencia" value="Secretaria"> Secretaria</label>
-                        <label><input type="checkbox" name="dependencia" value="Salão Principal"> Salão Principal</label>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- ===== CHECKLIST DE MANUTENÇÃO ===== -->
-            <div class="section">
-                <h2 class="section-title">Checklist de Manutenção</h2>
-                <div class="checklist">
-                    <label><input type="checkbox" name="servico" value="Lâmpadas"> Troca de Lâmpadas</label>
-                    <label><input type="checkbox" name="servico" value="Hidráulico"> Reparo Hidráulico</label>
-                    <label><input type="checkbox" name="servico" value="Calhas"> Limpeza de Calhas</label>
-                    <label><input type="checkbox" name="servico" value="Telhado"> Reparo no Telhado</label>
-                </div>
-                <textarea name="servicoExecutado" placeholder="Observações do encarregado..." rows="3" style="margin-top:15px;"></textarea>
-            </div>
-
-            <!-- ===== REGISTRO FOTOGRÁFICO ===== -->
-            <div class="section">
-                <h2 class="section-title">Registro Fotográfico (Obrigatório)</h2>
-                <div class="images-grid">
-                    <div class="img-input"><span>1. Fachada</span><input type="file" name="imagemFachada" accept="image/*" required></div>
-                    <div class="img-input"><span>2. Piso</span><input type="file" name="imagemPiso" accept="image/*" required></div>
-                    <div class="img-input"><span>3. Elétrica</span><input type="file" name="imagemQuadro" accept="image/*" required></div>
-                    <div class="img-input"><span>4. Forro</span><input type="file" name="imagemForro" accept="image/*" required></div>
-                    <div class="img-input"><span>5. Pintura</span><input type="file" name="imagemPintura" accept="image/*" required></div>
-                    <div class="img-input"><span>6. Acesso</span><input type="file" name="imagemAcesso" accept="image/*" required></div>
-                </div>
-            </div>
-
-            <!-- ===== OCORRÊNCIAS CRÍTICAS ===== -->
-            <div class="section" style="border-top: 3px solid var(--danger-color);">
-                <h2 class="section-title" style="color: var(--danger-color);">📸 Ocorrências Críticas (Opcional)</h2>
-                <p style="font-size: 0.8rem; color: #666; margin-bottom: 10px;">Registre infiltrações, rachaduras ou problemas graves.</p>
-                <div class="form-group">
-                    <input type="file" name="fotosExtras" accept="image/*" multiple>
-                    <small>Selecione até 3 fotos extras.</small>
-                </div>
-            </div>
-
-            <!-- ===== AÇÕES ===== -->
-            <div class="actions-container">
-                <button type="submit" class="btn-save">💾 SALVAR VISTORIA</button>
-                <div class="btn-group-row">
-                    <button type="button" class="btn-secondary btn-whats">📱 WhatsApp</button>
-                    <button type="button" id="btnExportar" class="btn-secondary btn-export">📤 Exportar JSON</button>
-                </div>
-            </div>
-
-        </form>
-
-        <div class="section-memoria">
-            <small style="color: #d63031; display: block; margin-bottom: 10px; font-weight: bold;">
-                ⚠️ Atenção: Use apenas após enviar os arquivos ao engenheiro.
-            </small>
-            <button type="button" class="btn-danger" onclick="limparBancoDados()">🗑️ LIMPAR MEMÓRIA DO APP</button>
-        </div>
+<!-- ── HEADER ── -->
+<div class="app-header">
+  <div class="h-top">
+    <a href="./home.html" class="h-back" title="Voltar">‹</a>
+    <div class="h-logo">
+      <div class="h-icon">🔍</div>
+      <div><div class="h-title">Vistoria de Edificação</div><div class="h-sub">GeoSistema PRO</div></div>
     </div>
+    <div class="h-nav">
+      <a href="./Dashboard_Manutencao.html">📊 Relatórios</a>
+    </div>
+  </div>
+  <div style="height:12px;"></div>
+</div>
+<div class="wave"></div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="js/mapa.js"></script>
-    <script src="js/armazenamento.js"></script>
-    <script src="js/main.js"></script>
+<div class="content">
+
+  <!-- DADOS GERAIS -->
+  <div class="sc">
+    <div class="sc-h"><div class="sc-ico ib">📍</div>
+      <div><div class="sc-title">Dados Gerais</div><div class="sc-sub">Edificação e localização</div></div></div>
+    <div class="sc-b">
+      <div class="fr2">
+        <div class="fg"><label class="fl">Bairro</label>
+          <select id="bairro" name="bairro" required><option value="">Selecione...</option></select></div>
+        <div class="fg"><label class="fl">Código</label>
+          <input type="text" id="codigoEdificacao" name="codigoEdificacao" readonly></div>
+      </div>
+      <div class="fg"><label class="fl">Cidade</label>
+        <input type="text" id="cidade" name="cidade" readonly></div>
+      <div id="mapa"></div>
+      <input type="hidden" id="latitude" name="latitude">
+      <input type="hidden" id="longitude" name="longitude">
+    </div>
+  </div>
+
+  <!-- CARACTERÍSTICAS TÉCNICAS -->
+  <div class="sc">
+    <div class="sc-h"><div class="sc-ico ib">🏗️</div>
+      <div><div class="sc-title">Características Técnicas</div><div class="sc-sub">Estrutura e condições</div></div></div>
+    <div class="sc-b">
+      <div class="fr2">
+        <div class="fg"><label class="fl">Zoneamento</label><input type="text" name="zoneamento" required></div>
+        <div class="fg"><label class="fl">Estrutura</label>
+          <select name="tipoEstrutura">
+            <option value="Alvenaria">Alvenaria</option>
+            <option value="Metálica">Metálica</option>
+            <option value="Mista">Mista</option>
+          </select></div>
+      </div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">Alvará</label>
+          <select name="possuiAlvara"><option value="Sim">Sim</option><option value="Não">Não</option></select></div>
+        <div class="fg"><label class="fl">AVCB</label>
+          <select name="avcb"><option value="Sim">Sim</option><option value="Não">Não</option><option value="Vencido">Vencido</option></select></div>
+      </div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">Estacionamento</label>
+          <select name="possuiEstacionamento"><option value="Sim">Sim</option><option value="Não">Não</option></select></div>
+        <div class="fg"><label class="fl">Corredores</label>
+          <select name="espacamentoCorredores">
+            <option value="Maior que 1.2m">&gt; 1.2m</option>
+            <option value="Menor que 1.0m">&lt; 1.0m</option>
+          </select></div>
+      </div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">Piso</label>
+          <select name="situacaoPiso"><option value="Boa">Boa</option><option value="Regular">Regular</option><option value="Ruim">Ruim</option></select></div>
+        <div class="fg"><label class="fl">Pintura</label>
+          <select name="situacaoPintura"><option value="Boa">Boa</option><option value="Regular">Regular</option><option value="Ruim">Ruim</option></select></div>
+      </div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">Cobertura</label>
+          <select name="condicaoCobertura">
+            <option value="Boa">Boa</option>
+            <option value="Com infiltração">Com infiltração</option>
+            <option value="Danificada">Danificada</option>
+          </select></div>
+        <div class="fg"><label class="fl">Acessibilidade</label>
+          <select name="acessibilidade"><option value="Boa">Boa</option><option value="Pouca">Pouca</option><option value="Nenhuma">Nenhuma</option></select></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- URGÊNCIA -->
+  <div class="sc">
+    <div class="sc-h"><div class="sc-ico ia">⚡</div>
+      <div><div class="sc-title">Nível de Urgência</div><div class="sc-sub">Situação geral da edificação</div></div></div>
+    <div class="sc-b">
+      <div class="urg-grid">
+        <div class="urg-btn urg-normal sel" onclick="setUrg(this,'Normal')">🟢 Normal</div>
+        <div class="urg-btn urg-atencao" onclick="setUrg(this,'Atenção')">🟡 Atenção</div>
+        <div class="urg-btn urg-urgente" onclick="setUrg(this,'Urgente')">🔴 Urgente</div>
+      </div>
+      <input type="hidden" name="nivelUrgencia" id="nivelUrgencia" value="Normal">
+    </div>
+  </div>
+
+  <!-- APONTAMENTOS -->
+  <div class="sc">
+    <div class="sc-h"><div class="sc-ico ir">⚠️</div>
+      <div><div class="sc-title">Apontamentos</div><div class="sc-sub">Recuos, risco e dependências</div></div></div>
+    <div class="sc-b">
+      <label class="fl" style="margin-bottom:8px;">Recuo e risco</label>
+      <div class="check-grid" style="margin-bottom:12px;">
+        <div class="check-item" onclick="togCheck(this,'apontamento','Sem recuo lateral')">
+          <div class="check-box"></div><span class="check-lbl">📐 Sem recuo lateral</span></div>
+        <div class="check-item" onclick="togCheck(this,'apontamento','Sem recuo de fundo')">
+          <div class="check-box"></div><span class="check-lbl">📏 Sem recuo de fundo</span></div>
+        <div class="check-item" onclick="togCheck(this,'apontamento','Área de risco',true)" style="grid-column:1/-1;">
+          <div class="check-box"></div><span class="check-lbl">⚠️ Área de risco — risco imediato à segurança</span></div>
+      </div>
+      <label class="fl" style="margin-bottom:8px;">Outras dependências</label>
+      <div class="check-grid">
+        <div class="check-item" onclick="togCheck(this,'dependencia','Fundo Bíblico')">
+          <div class="check-box"></div><span class="check-lbl">📖 Fundo Bíblico</span></div>
+        <div class="check-item" onclick="togCheck(this,'dependencia','EBI')">
+          <div class="check-box"></div><span class="check-lbl">🏫 EBI</span></div>
+        <div class="check-item" onclick="togCheck(this,'dependencia','Secretaria')">
+          <div class="check-box"></div><span class="check-lbl">🗂️ Secretaria</span></div>
+        <div class="check-item" onclick="togCheck(this,'dependencia','Salão Principal')">
+          <div class="check-box"></div><span class="check-lbl">🏛️ Salão Principal</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHECKLIST DE MANUTENÇÃO -->
+  <div class="sc">
+    <div class="sc-h"><div class="sc-ico ib">🔧</div>
+      <div><div class="sc-title">Checklist de Manutenção</div><div class="sc-sub">Serviços verificados</div></div></div>
+    <div class="sc-b">
+      <div class="serv-grid">
+        <div class="serv-btn" onclick="togServ(this,'Lâmpadas')"><span class="sb-ico">💡</span><span class="sb-lbl">Troca de Lâmpadas</span></div>
+        <div class="serv-btn" onclick="togServ(this,'Reparo Hidráulico')"><span class="sb-ico">🚿</span><span class="sb-lbl">Reparo Hidráulico</span></div>
+        <div class="serv-btn" onclick="togServ(this,'Limpeza de Calhas')"><span class="sb-ico">🏗️</span><span class="sb-lbl">Limpeza de Calhas</span></div>
+        <div class="serv-btn" onclick="togServ(this,'Reparo no Telhado')"><span class="sb-ico">🏠</span><span class="sb-lbl">Reparo no Telhado</span></div>
+        <div class="serv-btn" onclick="togServ(this,'Pintura / Reparo')"><span class="sb-ico">🖌️</span><span class="sb-lbl">Pintura / Reparo</span></div>
+        <div class="serv-btn" onclick="togServ(this,'Limpeza Geral')"><span class="sb-ico">🧹</span><span class="sb-lbl">Limpeza Geral</span></div>
+        <div class="serv-btn" onclick="togServ(this,'Sanitários')"><span class="sb-ico">🚽</span><span class="sb-lbl">Sanitários</span></div>
+        <div class="serv-btn" onclick="togServ(this,'Acessibilidade')"><span class="sb-ico">♿</span><span class="sb-lbl">Acessibilidade</span></div>
+      </div>
+      <div class="fg" style="margin-top:10px;">
+        <label class="fl">Observações do vistoriador</label>
+        <textarea name="servicoExecutado" id="servicoExecutado" rows="3" placeholder="Descreva o que foi observado, pendências, recomendações..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTRO FOTOGRÁFICO -->
+  <div class="sc">
+    <div class="sc-h"><div class="sc-ico ib">📷</div>
+      <div><div class="sc-title">Registro Fotográfico</div><div class="sc-sub">6 fotos obrigatórias</div></div></div>
+    <div class="sc-b">
+      <div class="foto-grid">
+        <div class="foto-slot" id="fs_fachada">
+          <span class="fs-ico">📷</span><span class="fs-lbl">Fachada</span>
+          <input type="file" name="imagemFachada" accept="image/*" capture="environment" required onchange="prevFoto(this,'fs_fachada')">
+        </div>
+        <div class="foto-slot" id="fs_piso">
+          <span class="fs-ico">📷</span><span class="fs-lbl">Piso</span>
+          <input type="file" name="imagemPiso" accept="image/*" capture="environment" required onchange="prevFoto(this,'fs_piso')">
+        </div>
+        <div class="foto-slot" id="fs_quadro">
+          <span class="fs-ico">📷</span><span class="fs-lbl">Elétrica</span>
+          <input type="file" name="imagemQuadro" accept="image/*" capture="environment" required onchange="prevFoto(this,'fs_quadro')">
+        </div>
+        <div class="foto-slot" id="fs_forro">
+          <span class="fs-ico">📷</span><span class="fs-lbl">Forro</span>
+          <input type="file" name="imagemForro" accept="image/*" capture="environment" required onchange="prevFoto(this,'fs_forro')">
+        </div>
+        <div class="foto-slot" id="fs_pintura">
+          <span class="fs-ico">📷</span><span class="fs-lbl">Pintura</span>
+          <input type="file" name="imagemPintura" accept="image/*" capture="environment" required onchange="prevFoto(this,'fs_pintura')">
+        </div>
+        <div class="foto-slot" id="fs_acesso">
+          <span class="fs-ico">📷</span><span class="fs-lbl">Acesso</span>
+          <input type="file" name="imagemAcesso" accept="image/*" capture="environment" required onchange="prevFoto(this,'fs_acesso')">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OCORRÊNCIAS CRÍTICAS -->
+  <div class="sc" style="border-color:rgba(239,68,68,.3);">
+    <div class="sc-h"><div class="sc-ico ir">🚨</div>
+      <div><div class="sc-title">Ocorrências Críticas</div><div class="sc-sub">Opcional — infiltrações, rachaduras, danos</div></div></div>
+    <div class="sc-b">
+      <div class="foto-grid">
+        <div class="foto-slot" id="fs_extra1">
+          <span class="fs-ico">📷</span><span class="fs-lbl">Ocorrência 1</span>
+          <input type="file" name="fotosExtras" accept="image/*" capture="environment" onchange="prevFoto(this,'fs_extra1',true)">
+        </div>
+        <div class="foto-slot" id="fs_extra2">
+          <span class="fs-ico">📷</span><span class="fs-lbl">Ocorrência 2</span>
+          <input type="file" name="fotosExtras" accept="image/*" capture="environment" onchange="prevFoto(this,'fs_extra2',true)">
+        </div>
+        <div class="foto-slot" id="fs_extra3">
+          <span class="fs-ico">📷</span><span class="fs-lbl">Ocorrência 3</span>
+          <input type="file" name="fotosExtras" accept="image/*" capture="environment" onchange="prevFoto(this,'fs_extra3',true)">
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FORM HIDDEN — compatibilidade com armazenamento.js -->
+<form id="vistoriaForm" style="display:none;"></form>
+
+<!-- ── BOTTOM BAR ── -->
+<div class="bottom-bar">
+  <button class="btn-save" id="btnSalvar">💾 Salvar Vistoria</button>
+  <div class="btn-row">
+    <button class="btn-sec btn-wa" id="btnWhats">📱 WhatsApp</button>
+    <button class="btn-sec btn-exp" id="btnExportar">📤 Exportar JSON</button>
+    <button class="btn-sec btn-clr" onclick="confirmarLimpar()">🗑️ Limpar</button>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/mapa.js"></script>
+<script src="js/armazenamento.js"></script>
+<script>
+/* ── UI ── */
+function showT(m){
+  const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+// Urgência
+function setUrg(el,val){
+  document.querySelectorAll('.urg-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('nivelUrgencia').value=val;
+}
+
+// Checkboxes visuais
+const _sel={apontamento:[],dependencia:[],servico:[]};
+function togCheck(el,tipo,val,risco=false){
+  const ativo=!el.classList.contains('chk');
+  el.classList.toggle('chk',ativo);
+  if(risco) el.classList.toggle('chk-risco',ativo);
+  el.querySelector('.check-box').textContent=ativo?'✓':'';
+  const arr=_sel[tipo];
+  const i=arr.indexOf(val);
+  if(ativo&&i===-1) arr.push(val);
+  else if(!ativo&&i>-1) arr.splice(i,1);
+}
+function togServ(el,val){
+  const ativo=!el.classList.contains('sel');
+  el.classList.toggle('sel',ativo);
+  const i=_sel.servico.indexOf(val);
+  if(ativo&&i===-1) _sel.servico.push(val);
+  else if(!ativo&&i>-1) _sel.servico.splice(i,1);
+}
+
+// Preview foto
+function prevFoto(inp,slotId,danger=false){
+  if(!inp.files[0]) return;
+  const slot=document.getElementById(slotId);
+  const url=URL.createObjectURL(inp.files[0]);
+  slot.querySelectorAll('.fs-ico,.fs-lbl').forEach(e=>e.style.visibility='hidden');
+  let img=slot.querySelector('img');
+  if(!img){img=document.createElement('img');slot.insertBefore(img,slot.querySelector('input'));}
+  img.src=url;
+  slot.classList.add(danger?'filled-danger':'filled');
+  let chk=slot.querySelector('.fs-chk');
+  if(!chk){chk=document.createElement('div');chk.className='fs-chk';chk.textContent='✓';slot.appendChild(chk);}
+}
+
+// Monta form hidden para armazenamento.js
+function montarForm(){
+  const form=document.getElementById('vistoriaForm');
+  form.innerHTML='';
+  const add=(n,v)=>{const i=document.createElement('input');i.type='hidden';i.name=n;i.value=v;form.appendChild(i);};
+  // Campos simples
+  [['bairro','bairro'],['codigoEdificacao','codigoEdificacao'],['cidade','cidade'],
+   ['latitude','latitude'],['longitude','longitude']].forEach(([id,name])=>{
+    const el=document.getElementById(id); if(el) add(name,el.value);
+  });
+  ['tipoEstrutura','possuiAlvara','avcb','possuiEstacionamento','espacamentoCorredores',
+   'situacaoPiso','situacaoPintura','condicaoCobertura','acessibilidade','zoneamento'].forEach(n=>{
+    const el=document.querySelector(`[name="${n}"]`); if(el) add(n,el.value);
+  });
+  add('nivelUrgencia',document.getElementById('nivelUrgencia').value);
+  const obs=document.getElementById('servicoExecutado'); if(obs) add('servicoExecutado',obs.value);
+  // Arrays
+  _sel.apontamento.forEach(v=>add('apontamento',v));
+  _sel.dependencia.forEach(v=>add('dependencia',v));
+  _sel.servico.forEach(v=>add('servico',v));
+  // File inputs reais
+  document.querySelectorAll('.foto-slot input[type=file]').forEach(fi=>{
+    if(fi.files.length>0){const c=fi.cloneNode(true);form.appendChild(c);}
+  });
+  return form;
+}
+
+function confirmarLimpar(){
+  if(confirm('⚠️ Limpar todas as vistorias salvas?')) limparBancoDados();
+}
+
+document.getElementById('btnSalvar').addEventListener('click',async()=>{
+  const btn=document.getElementById('btnSalvar');
+  btn.disabled=true;btn.textContent='⌛ Salvando...';
+  await salvarVistoriaCompleta(montarForm());
+  btn.disabled=false;btn.textContent='💾 Salvar Vistoria';
+});
+document.getElementById('btnWhats').addEventListener('click',async()=>{
+  const btn=document.getElementById('btnWhats');
+  btn.disabled=true;
+  await enviarParaWhatsApp(montarForm());
+  btn.disabled=false;
+});
+document.getElementById('btnExportar').addEventListener('click',async()=>{
+  const btn=document.getElementById('btnExportar');
+  btn.disabled=true;
+  await exportarParaPC(montarForm());
+  btn.disabled=false;
+});
+</script>
+<script src="js/main.js"></script>
 </body>
 </html>

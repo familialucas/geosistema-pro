@@ -23,7 +23,9 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-
 
 /* ── HEADER ── */
 .app-header{background:var(--teal-dk);padding:16px 20px 0;}
-.h-top{display:flex;align-items:center;justify-content:space-between;}
+.h-top{display:flex;align-items:center;gap:8px;}
+.h-back{width:34px;height:34px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:9px;display:grid;place-items:center;color:#fff;font-size:18px;text-decoration:none;flex-shrink:0;transition:background .15s;}
+.h-back:active{background:rgba(255,255,255,.3);}
 .h-logo{display:flex;align-items:center;gap:10px;}
 .h-icon{width:38px;height:38px;background:rgba(255,255,255,.2);border-radius:10px;display:grid;place-items:center;font-size:20px;}
 .h-title{color:#fff;font-size:17px;font-weight:700;line-height:1.1;}
@@ -181,6 +183,36 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal);box-shadow:0 0 
 .al-amber{background:var(--amber-lt);border-left:3px solid var(--amber);color:#92400e;}
 
 @media(min-width:480px){.content{margin:0 auto;}.bottom-bar{max-width:480px;left:50%;transform:translateX(-50%);}}
+
+/* ── OBS RÁPIDAS ── */
+.obs-cats{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;}
+.obs-cat{padding:6px 12px;border-radius:20px;border:1.5px solid var(--brd);background:var(--bg);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;-webkit-user-select:none;user-select:none;}
+.obs-cat.sel{background:var(--teal-lt);border-color:var(--teal);color:#065f46;}
+.obs-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;min-height:32px;}
+.obs-chip{padding:6px 11px;border-radius:8px;border:1.5px solid var(--brd);background:var(--bg);font-size:12px;cursor:pointer;transition:all .15s;-webkit-user-select:none;user-select:none;}
+.obs-chip:active{background:var(--teal-lt);border-color:var(--teal);}
+.obs-chip.num-chip{display:flex;align-items:center;gap:6px;}
+.obs-chip.num-chip input{width:36px;padding:2px 4px;font-size:12px;border-radius:5px;border:1px solid var(--brd);text-align:center;background:var(--sur);}
+.obs-preview{padding:9px 12px;background:var(--blue-lt);border-radius:9px;font-size:12px;color:var(--blue);font-weight:500;margin-bottom:8px;min-height:36px;border:1px solid rgba(26,115,232,.2);}
+
+/* ── PENDÊNCIAS ── */
+.pend-item{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:10px;border:1.5px solid var(--brd);background:var(--bg);margin-bottom:8px;}
+.pend-item.aberta{border-color:var(--amber);background:var(--amber-lt);}
+.pend-item.resolvida{border-color:var(--green);background:var(--green-lt);opacity:.7;}
+.pend-ico{font-size:18px;flex-shrink:0;margin-top:1px;}
+.pend-body{flex:1;}
+.pend-titulo{font-size:13px;font-weight:700;}
+.pend-data{font-size:10px;color:var(--muted);margin-top:1px;}
+.pend-status{display:flex;gap:6px;margin-top:8px;}
+.pend-btn{flex:1;padding:7px 6px;border-radius:8px;border:1.5px solid var(--brd);background:var(--sur);font-size:11px;font-weight:700;cursor:pointer;text-align:center;-webkit-user-select:none;user-select:none;transition:all .15s;}
+.pend-btn.cont-sel{background:var(--amber-lt);border-color:var(--amber);color:#92400e;}
+.pend-btn.res-sel{background:var(--green-lt);border-color:var(--green);color:#15803d;}
+.pend-nova{width:100%;padding:10px;border-radius:10px;border:1.5px dashed var(--brd);background:transparent;color:var(--teal);font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:4px;}
+.pend-nova:active{background:var(--teal-lt);}
+
+/* ── EQUIPE PADRÃO ── */
+.btn-equipe-padrao{width:100%;padding:10px;border-radius:10px;border:1.5px solid var(--teal);background:var(--teal-lt);color:#065f46;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:10px;}
+.btn-salvar-padrao{padding:7px 14px;border-radius:8px;border:1.5px solid var(--blue);background:var(--blue-lt);color:var(--blue);font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;margin-top:6px;display:block;}
 </style>
   <!-- ══ PWA GeoSistema PRO ══ -->
   <link rel="manifest" href="./manifest.json">
@@ -206,6 +238,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal);box-shadow:0 0 
 <!-- ── HEADER ── -->
 <div class="app-header">
   <div class="h-top">
+    <a href="./home.html" class="h-back" title="Voltar">‹</a>
     <div class="h-logo">
       <div class="h-icon">🔧</div>
       <div><div class="h-title">Diário de Manutenção</div><div class="h-sub">GeoSistema PRO</div></div>
@@ -283,6 +316,32 @@ input:focus,select:focus,textarea:focus{border-color:var(--teal);box-shadow:0 0 
   </div>
 </div>
 
+<!-- ── SHEET: NOVA PENDÊNCIA ── -->
+<div class="sh-ov" id="shPend">
+  <div class="sheet">
+    <div class="sh-h"></div>
+    <div class="sh-title">📌 Nova Pendência</div>
+    <div class="fg"><label class="fl">Descrição da pendência</label><input type="text" id="pDesc" placeholder="Ex: Reconstrução do muro, Troca de telhas..."></div>
+    <div class="fr2">
+      <div class="fg"><label class="fl">Categoria</label>
+        <select id="pCat">
+          <option>🧱 Estrutura</option><option>🚿 Hidráulica</option><option>⚡ Elétrica</option>
+          <option>🏠 Cobertura</option><option>🖌️ Acabamento</option><option>♿ Acessibilidade</option>
+          <option>🚽 Sanitários</option><option>🔊 Som / Audiovisual</option><option>🪑 Mobiliário</option><option>🌿 Externo</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Prioridade</label>
+        <select id="pPrior">
+          <option value="normal">🟢 Normal</option>
+          <option value="atencao">🟡 Atenção</option>
+          <option value="urgente">🔴 Urgente</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-sv" style="width:100%;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:700;margin-top:4px;" onclick="confirmarPend()">📌 Registrar Pendência</button>
+  </div>
+</div>
+
 <script>
 /* ════════════════════════════════════════════════
    DADOS BASE
@@ -311,6 +370,45 @@ const EDIFICACOES = [
   { id:'BR_04_1055', nome:'Lauro de Freitas — Praia de Ipitanga',       bairro:'Praia de Ipitanga',             codigo:'BR 04 1055', cidade:'Lauro de Freitas', lat:-12.9058, lng:-38.3416 },
   { id:'BR_04_1806', nome:'Lauro de Freitas — Vida Nova',               bairro:'Vida Nova',                     codigo:'BR 04 1806', cidade:'Lauro de Freitas', lat:-12.8816, lng:-38.3202 },
 ];
+
+// ── Observações rápidas por categoria ────────────────────────────────────────
+const OBS_CATS = {
+  'Banheiro': {
+    ico: '🚽',
+    chips: ['Finalizar banheiro','Falta revestimento','Ralo entupido','Vazamento','Porta danificada','Sem ventilação'],
+    contadores: [
+      {id:'vasos',lbl:'vasos'},
+      {id:'pias',lbl:'pia(s)'},
+      {id:'mictorio',lbl:'mictório(s)'},
+      {id:'divisoria',lbl:'divisória(s)'},
+    ]
+  },
+  'Muro / Estrutura': {
+    ico: '🧱',
+    chips: ['Problema no muro continua','Muro a reconstruir','Rachadura no muro','Muro sem reboco','Pilar danificado','Reconstrução pendente'],
+    contadores: []
+  },
+  'Som / Audiovisual': {
+    ico: '🔊',
+    chips: ['Problema no som continua','Mesa de som com defeito','Caixas de som queimadas','Cabeamento danificado','Microfone sem sinal','Sistema sem áudio'],
+    contadores: []
+  },
+  'Mobiliário': {
+    ico: '🪑',
+    chips: ['Sala com outro mobiliário no espaço','Mobiliário a remover','Cadeiras danificadas','Mesa quebrada','Armário sem porta','Bancada danificada'],
+    contadores: []
+  },
+  'Calha / Cobertura': {
+    ico: '🏗️',
+    chips: ['Calha faltando','Calha entupida','Telha danificada','Infiltração no teto','Forro danificado','Calha perto do EBI'],
+    contadores: []
+  },
+  'Acessibilidade': {
+    ico: '♿',
+    chips: ['Falta corrimão','Falta kit acessibilidade WC masculino','Falta kit acessibilidade WC feminino','Rampa danificada','Piso tátil faltando'],
+    contadores: []
+  },
+};
 
 // Serviços padrão do sistema (espelhados do index.html)
 const SERVICOS_PADRAO = [
@@ -370,6 +468,11 @@ const S = {
   urgencia: 'Normal',
   // apontamentos (área de risco, sem recuo, etc)
   apontamentos: [],
+  // pendências persistentes
+  pendencias: [],        // [{id, desc, cat, prior, status, dataCriacao, dataUpdate}]
+  // obs rápidas
+  obsCatAtiva: null,     // categoria selecionada no construtor
+  obsContadores: {},     // {vasos:2, pias:1, ...}
 };
 let FF = -1;
 
@@ -509,6 +612,52 @@ function rServicos(c){
       <span class="sb-lbl">${s.lbl}</span>
     </div>`).join('');
 
+  // ── Pendências da edificação atual ──
+  const pends = getPendEdif();
+  const abertas = pends.filter(p=>p.status!=='resolvida');
+  const pendHtml = pends.length ? pends.map((p,i)=>{
+    const priorCor = p.prior==='urgente'?'var(--red)':p.prior==='atencao'?'var(--amber)':'var(--green)';
+    return `<div class="pend-item ${p.status==='resolvida'?'resolvida':'aberta'}">
+      <div class="pend-ico">${p.cat.split(' ')[0]}</div>
+      <div class="pend-body">
+        <div class="pend-titulo">${p.desc}</div>
+        <div class="pend-data">${p.cat} · Aberta em ${p.dataCriacao} · <span style="color:${priorCor};font-weight:700;">${p.prior==='urgente'?'🔴 Urgente':p.prior==='atencao'?'🟡 Atenção':'🟢 Normal'}</span></div>
+        <div class="pend-status">
+          <div class="pend-btn ${p.status==='continua'?'cont-sel':''}" onclick="setPendStatus(${i},'continua')">⏳ Continua</div>
+          <div class="pend-btn ${p.status==='resolvida'?'res-sel':''}" onclick="setPendStatus(${i},'resolvida')">✅ Resolvida</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('') : `<p style="font-size:12px;color:var(--muted);padding:6px 0;">Nenhuma pendência registrada.</p>`;
+
+  // ── Construtor de obs rápidas ──
+  const catAtiva = S.obsCatAtiva;
+  const catBtns = Object.entries(OBS_CATS).map(([nome,cfg])=>
+    `<div class="obs-cat ${catAtiva===nome?'sel':''}" onclick="setObsCat('${nome}')">${cfg.ico} ${nome}</div>`
+  ).join('');
+
+  let chipsHtml = '';
+  if(catAtiva && OBS_CATS[catAtiva]){
+    const cfg = OBS_CATS[catAtiva];
+    chipsHtml = cfg.chips.map(ch=>
+      `<div class="obs-chip" onclick="addObsChip(this,'${ch.replace(/'/g,"\\'")}')">+ ${ch}</div>`
+    ).join('');
+    if(cfg.contadores.length){
+      chipsHtml += cfg.contadores.map(ct=>
+        `<div class="obs-chip num-chip">
+          <input type="number" min="0" max="20" value="${S.obsContadores[ct.id]||0}"
+            id="cnt_${ct.id}" oninput="setCnt('${ct.id}',this.value)" style="width:38px;">
+          <span>${ct.lbl}</span>
+          <button onclick="addCntChip('${ct.id}','${ct.lbl}')" style="background:var(--teal);color:#fff;border:none;border-radius:5px;padding:2px 6px;font-size:11px;cursor:pointer;">+</button>
+        </div>`
+      ).join('');
+    }
+  }
+
+  const obsPreview = S.servicosDesc
+    ? `<div class="obs-preview">📝 ${S.servicosDesc}</div>`
+    : `<div class="obs-preview" style="color:var(--muted);">Toque nas categorias e chips acima para montar a observação</div>`;
+
   c.innerHTML = `
   <div class="sc">
     <div class="sc-h"><div class="sc-ico it">🔧</div>
@@ -517,11 +666,35 @@ function rServicos(c){
     <div class="sc-b">
       <label class="fl" style="margin-bottom:8px;">Selecione os serviços do dia</label>
       <div class="serv-grid">${grid}</div>
-      <div class="fg"><label class="fl">Descrição geral dos serviços</label>
-        <textarea id="serv_desc" rows="3" placeholder="Detalhe o que foi feito, materiais utilizados, área coberta...">${S.servicosDesc||''}</textarea>
+    </div>
+  </div>
+
+  <div class="sc">
+    <div class="sc-h"><div class="sc-ico io">💬</div>
+      <div><div class="sc-title">Observações Rápidas</div>
+        <div class="sc-sub">Monte a observação tocando nos itens</div></div></div>
+    <div class="sc-b">
+      <label class="fl" style="margin-bottom:7px;">Categoria</label>
+      <div class="obs-cats">${catBtns}</div>
+      ${catAtiva ? `<label class="fl" style="margin-bottom:7px;">Itens</label><div class="obs-chips">${chipsHtml}</div>` : ''}
+      ${obsPreview}
+      <div style="display:flex;gap:7px;align-items:center;">
+        <textarea id="serv_desc" rows="2" placeholder="Edite livremente ou use os chips acima..." style="flex:1;">${S.servicosDesc||''}</textarea>
+        <button onclick="limparObs()" style="background:var(--red-lt);color:var(--red);border:none;border-radius:8px;padding:8px;font-size:18px;cursor:pointer;flex-shrink:0;" title="Limpar">🗑</button>
       </div>
     </div>
   </div>
+
+  <div class="sc">
+    <div class="sc-h"><div class="sc-ico ip">📌</div>
+      <div><div class="sc-title">Pendências da Edificação</div>
+        <div class="sc-sub">${abertas.length} pendência(s) em aberto</div></div></div>
+    <div class="sc-b">
+      ${pendHtml}
+      <button class="pend-nova" onclick="abrirShPend()">➕ Nova pendência</button>
+    </div>
+  </div>
+
   ${itensServico ? `<div style="margin-top:2px;">${itensServico}</div>` : ''}`;
 }
 
@@ -540,6 +713,75 @@ function remServ(i){ S.servicos.splice(i,1); svServicos(); rServicos(document.ge
 function setServStatus(i,v){ S.servicos[i].status=v; rServicos(document.getElementById('mainContent')); }
 function setServObs(i,v){ S.servicos[i].obs=v; }
 function svServicos(){ S.servicosDesc = document.getElementById('serv_desc')?.value||S.servicosDesc||''; }
+
+// ── Obs rápidas ──
+function setObsCat(nome){
+  svServicos();
+  S.obsCatAtiva = S.obsCatAtiva===nome ? null : nome;
+  rServicos(document.getElementById('mainContent'));
+}
+function addObsChip(el, texto){
+  svServicos();
+  const atual = (S.servicosDesc||'').trim();
+  S.servicosDesc = atual ? atual + '. ' + texto : texto;
+  rServicos(document.getElementById('mainContent'));
+}
+function setCnt(id, val){ S.obsContadores[id] = parseInt(val)||0; }
+function addCntChip(id, lbl){
+  svServicos();
+  const qtd = S.obsContadores[id] || parseInt(document.getElementById('cnt_'+id)?.value)||0;
+  if(!qtd){ showT('⚠️ Informe a quantidade'); return; }
+  const atual = (S.servicosDesc||'').trim();
+  const trecho = qtd + ' ' + lbl;
+  S.servicosDesc = atual ? atual + ', ' + trecho : trecho;
+  rServicos(document.getElementById('mainContent'));
+}
+function limparObs(){
+  S.servicosDesc = '';
+  rServicos(document.getElementById('mainContent'));
+}
+
+// ── Pendências ──
+function lsKeyPend(){ return 'geo_pend_' + getEdifAtiva(); }
+function getPendEdif(){ return LS.get(lsKeyPend(), []); }
+function savePendEdif(arr){ LS.set(lsKeyPend(), arr); }
+
+function abrirShPend(){
+  document.getElementById('pDesc').value='';
+  document.getElementById('shPend').classList.add('open');
+  setTimeout(()=>document.getElementById('pDesc').focus(),280);
+}
+function fecharShPend(){ document.getElementById('shPend').classList.remove('open'); }
+document.getElementById('shPend').addEventListener('click',e=>{if(e.target===e.currentTarget)fecharShPend();});
+
+function confirmarPend(){
+  const desc = document.getElementById('pDesc').value.trim();
+  if(!desc){ showT('⚠️ Informe a descrição'); return; }
+  const pends = getPendEdif();
+  pends.push({
+    id: 'pend_'+Date.now(),
+    desc,
+    cat: document.getElementById('pCat').value,
+    prior: document.getElementById('pPrior').value,
+    status: 'continua',
+    dataCriacao: S.data,
+    dataUpdate: S.data,
+  });
+  savePendEdif(pends);
+  fecharShPend();
+  rServicos(document.getElementById('mainContent'));
+  showT('📌 Pendência registrada');
+}
+
+function setPendStatus(i, status){
+  svServicos();
+  const pends = getPendEdif();
+  if(pends[i]){ pends[i].status = status; pends[i].dataUpdate = S.data; }
+  savePendEdif(pends);
+  // Sincroniza com S.pendencias para exportar no JSON
+  S.pendencias = pends;
+  rServicos(document.getElementById('mainContent'));
+}
 
 /* ════════════════════════════════════════════════
    STEP 2 — EQUIPE + MATERIAIS
@@ -564,15 +806,21 @@ function rEquipe(c){
       <button class="btn-rm" onclick="rmMat(${i})">✕</button>
     </div>`).join('') || `<p style="text-align:center;color:var(--muted);font-size:12px;padding:8px 0;">Nenhum material registrado.</p>`;
 
+  const temPadrao = LS.get('geo_equipe_padrao',[]).length > 0;
+
   c.innerHTML = `
   <div class="sc">
     <div class="sc-h"><div class="sc-ico ia">👷</div>
       <div><div class="sc-title">Equipe de Manutenção</div>
         <div class="sc-sub">${S.trabalhadores.length} funcionário(s) · ${tot}h totais</div></div></div>
     <div class="sc-b">
+      ${temPadrao ? `<button class="btn-equipe-padrao" onclick="carregarEquipePadrao()">⚡ Carregar equipe padrão</button>` : ''}
       ${lista}
       <button class="btn-add" onclick="abrirShTrab()">➕ Adicionar funcionário</button>
-      ${tot>0?`<div style="margin-top:10px;padding:10px 14px;background:var(--blue-lt);border-radius:10px;font-size:12px;color:var(--blue);font-weight:600;">📊 ${S.trabalhadores.length} funcionário(s) · ${tot}h-homem</div>`:''}
+      ${S.trabalhadores.length>0 ? `
+        <button class="btn-salvar-padrao" onclick="salvarEquipePadrao()">💾 Salvar como equipe padrão</button>
+        <div style="margin-top:10px;padding:10px 14px;background:var(--blue-lt);border-radius:10px;font-size:12px;color:var(--blue);font-weight:600;">📊 ${S.trabalhadores.length} funcionário(s) · ${tot}h-homem</div>
+      ` : ''}
     </div>
   </div>
   <div class="sc">
@@ -587,6 +835,22 @@ function rEquipe(c){
 }
 function rmT(i){ S.trabalhadores.splice(i,1); rEquipe(document.getElementById('mainContent')); }
 function rmMat(i){ S.materiais.splice(i,1); rEquipe(document.getElementById('mainContent')); }
+
+// ── Equipe padrão ──
+function salvarEquipePadrao(){
+  if(!S.trabalhadores.length){ showT('⚠️ Adicione funcionários primeiro'); return; }
+  LS.set('geo_equipe_padrao', S.trabalhadores);
+  showT('✅ Equipe padrão salva!');
+  rEquipe(document.getElementById('mainContent'));
+}
+function carregarEquipePadrao(){
+  const padrao = LS.get('geo_equipe_padrao',[]);
+  if(!padrao.length){ showT('⚠️ Nenhuma equipe padrão salva'); return; }
+  // Adiciona apenas quem ainda não está na lista
+  padrao.forEach(t=>{ if(!S.trabalhadores.find(x=>x.nome===t.nome)) S.trabalhadores.push({...t}); });
+  rEquipe(document.getElementById('mainContent'));
+  showT('⚡ Equipe padrão carregada!');
+}
 function abrirShTrab(){ document.getElementById('tNome').value=''; document.getElementById('tHoras').value='8'; document.getElementById('shTrab').classList.add('open'); setTimeout(()=>document.getElementById('tNome').focus(),280); }
 function fecharShTrab(){ document.getElementById('shTrab').classList.remove('open'); }
 document.getElementById('shTrab').addEventListener('click',e=>{if(e.target===e.currentTarget)fecharShTrab();});
@@ -808,6 +1072,8 @@ function mkJSON(){
     ocorrencias:        S.ocorrencias,
     ocGravidade:        S.ocGrav,
     ocDescricao:        S.ocDesc,
+    // ── pendências
+    pendencias:         getPendEdif(),
     geradoEm:           ts,
   };
 }
